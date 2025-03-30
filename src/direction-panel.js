@@ -14,7 +14,7 @@ export class DirectionPanel {
       title: 'Direction Panel',
       css: {
         width: 400,
-        height: 300,
+        height: 100,
         top: 100,
         right: 100,
       },
@@ -30,6 +30,7 @@ export class DirectionPanel {
   }
 
   async initialize() {
+    console.log('Initializing DirectionPanel');
     this.initWindow();
     this.initLayout();
     this.initEventListeners();
@@ -118,13 +119,15 @@ export class DirectionPanel {
       </div>
     `);
 
-    // Add some basic styling
+    // Add styles for the compass rose
     j('head').append(`
       <style>
         .compass-sections {
           display: flex;
-          gap: 20px;
-          padding: 10px;
+          gap: 5px;
+          padding: 2px;
+          height: 100%;
+          align-items: center;
         }
         .compass-rose-section {
           flex: 1;
@@ -140,25 +143,25 @@ export class DirectionPanel {
         .special-exits {
           display: flex;
           flex-wrap: wrap;
-          gap: 6px;
-          padding: 10px;
+          gap: 2px;
+          padding: 2px;
         }
         .special-exit-btn {
-          padding: 6px 10px;
-          border-radius: 4px;
-          border: 2px solid #888;
+          padding: 2px 6px;
+          border-radius: 3px;
+          border: 1px solid #888;
           background: #444;
           color: #fff;
-          font-size: 12px;
+          font-size: 11px;
           cursor: pointer;
           transition: all 0.2s;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
           white-space: nowrap;
         }
         .special-exit-btn:hover {
           background: #555;
           transform: scale(1.05);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .special-exit-btn:active {
           background: #666;
@@ -180,52 +183,44 @@ export class DirectionPanel {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 5px;
-          padding: 10px;
+          gap: 2px;
+          padding: 2px;
         }
         .compass-row {
           display: flex;
-          gap: 5px;
+          gap: 2px;
           justify-content: center;
         }
         .vertical-buttons {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 2px;
         }
         .compass-btn {
-          width: 40px;
-          height: 40px;
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
-          border: 2px solid #888;
+          border: 1px solid #888;
           background: #444;
           color: #fff;
-          font-size: 20px;
+          font-size: 14px;
           cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.2s;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          position: relative;
-          z-index: 102;
+          padding: 0;
+          margin: 0;
         }
         .compass-btn:hover {
           background: #555;
           transform: scale(1.1);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .compass-btn:active {
           background: #666;
           transform: scale(0.95);
-        }
-        .compass-btn.center {
-          background: #333;
-          cursor: default;
-        }
-        .compass-btn.center:hover {
-          transform: none;
-          box-shadow: none;
         }
         .compass-btn.disabled {
           background: #222;
@@ -239,37 +234,58 @@ export class DirectionPanel {
           transform: none;
           box-shadow: none;
         }
+        .compass-btn.center {
+          background: #666;
+          border-color: #aaa;
+        }
         #direction-panel .content {
-          background: transparent !important;
+          padding: 0 !important;
+          height: 100% !important;
         }
-        .chat-message {
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .chat-message .content {
-          width: 100%;
-          box-sizing: border-box;
-          word-break: break-word;
-        }
-        .chat-message .character {
-          margin-right: 4px;
+        #direction-panel .panel-content {
+          height: 100% !important;
         }
       </style>
     `);
   }
 
   initEventListeners() {
-    // Handle compass button clicks
-    j(this.id).on('click', '.compass-btn, .special-exit-btn', (e) => {
+    console.log('Setting up event listeners for DirectionPanel');
+    
+    // Add click handlers for each button
+    const buttons = j(this.id).find('.compass-btn, .special-exit-btn');
+    console.log('Found buttons:', buttons.length);
+    
+    buttons.on('click', (e) => {
+      console.log('Button clicked');
       const btn = j(e.currentTarget);
-      if (btn.hasClass('disabled')) return;
-      
-      // Handle center button (look command)
-      if (btn.hasClass('center')) {
-        config.socket.send('look');
+      if (btn.hasClass('disabled')) {
+        console.log('Button is disabled, ignoring click');
         return;
       }
       
+      // Debug logging
+      console.log('Button clicked:', {
+        isCenter: btn.hasClass('center'),
+        direction: btn.data('direction'),
+        ScrollView: config.ScrollView,
+        socket: config.socket
+      });
+      
+      // If it's the middle button (center), send "look" command
+      if (btn.hasClass('center')) {
+        console.log('Center button clicked, sending look command');
+        if (config.ScrollView && config.ScrollView.send) {
+          config.ScrollView.send('look');
+        } else if (config.socket && config.socket.send) {
+          config.socket.send('look');
+        } else {
+          console.log('No valid send method found');
+        }
+        return;
+      }
+      
+      // For other buttons, send the direction command
       const direction = btn.data('direction');
       let command = '';
       
@@ -291,7 +307,14 @@ export class DirectionPanel {
       }
       
       if (command) {
-        config.socket.send(command);
+        console.log('Sending command:', command);
+        if (config.ScrollView && config.ScrollView.send) {
+          config.ScrollView.send(command);
+        } else if (config.socket && config.socket.send) {
+          config.socket.send(command);
+        } else {
+          console.log('No valid send method found');
+        }
       }
     });
 
@@ -375,4 +398,4 @@ export class DirectionPanel {
       Event.fire('directionpanel_ready', this);
     }, 500);
   }
-} 
+}

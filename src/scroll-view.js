@@ -200,6 +200,38 @@ export class ScrollView {
       </div>
     `);
 
+    // Add CSS to remove empty space
+    j('head').append(`
+      <style>
+        .scroll-view .content {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+        .scroll-view .out {
+          flex: 1;
+          margin: 0;
+          padding: 5px;
+          padding-bottom: 15px;
+          overflow-y: auto;
+        }
+        .scroll-view .input {
+          margin: 0;
+          padding: 5px;
+          background: rgba(0, 0, 0, 0.9);
+        }
+        .scroll-view .send {
+          width: 100%;
+          padding: 5px;
+          margin: 0;
+          border: none;
+          background: transparent;
+          color: #fff;
+          font-family: monospace;
+        }
+      </style>
+    `);
+
     if (this.mobile) {
       j(`${this.id} .out`).css({
         'font-family': 'DejaVu Sans Mono',

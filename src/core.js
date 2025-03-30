@@ -55,7 +55,8 @@ export function initializeCore() {
     };
     j('head').append(
       '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />\
-			<meta name="apple-mobile-web-app-capable" content="yes">',
+      <meta name="mobile-web-app-capable" content="yes">\
+      <meta name="apple-mobile-web-app-capable" content="yes">',
     );
 
     j('head').append(
@@ -68,6 +69,46 @@ export function initializeCore() {
 
   if (!config.nocore) {
     if (config.host && config.port) {
+      // Set mobile-specific dimensions
+      if (config.device.mobile) {
+        console.log('Mobile mode detected in core.js');
+        
+        config.width = '100vw';
+        config.height = 'calc(100vh - 100px - 30px - 8px)'; // Increased from 70vh to 85vh
+        config.top = 0;
+        config.left = 0;
+
+        // Debug mobile dimensions
+        console.log('Mobile Layout Dimensions:', {
+          calculatedHeight: config.height,
+          viewportHeight: window.innerHeight,
+          directionPanelHeight: 100,
+          tabBarHeight: 30,
+          gap: 8,
+          deviceConfig: config.device
+        });
+
+        // Add transparent background style
+        j('head').append(`
+          <style>
+            #scrollview {
+              background: transparent !important;
+              pointer-events: none !important;
+            }
+            #scrollview .window-content {
+              background: transparent !important;
+              pointer-events: auto !important;
+            }
+            #direction-panel {
+              pointer-events: auto !important;
+              z-index: 102 !important;
+            }
+          </style>
+        `);
+      } else {
+        console.log('Not in mobile mode in core.js');
+      }
+
       new ScrollView({
         local: true,
         css: {
@@ -78,8 +119,8 @@ export function initializeCore() {
           zIndex: 103,
         },
         scrollback: 40 * 1000,
-        drag: true, // Enable dragging
-        snap: true, // Enable snapping to other windows
+        drag: false, // Always disable dragging
+        snap: false, // Always disable snapping
       });
 
       if (!config.embed && !config.device.mobile && !config.kong) {

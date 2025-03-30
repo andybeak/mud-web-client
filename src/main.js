@@ -1,8 +1,11 @@
+import { config } from './config.js';
+import { Event } from './event.js';
+import { ScrollView } from './scroll-view.js';
+import { DirectionPanel } from './direction-panel.js';
+import { CommunicationPanel } from './communication-panel.js';
 import jQuery from 'jquery';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import { initializeCore } from './core.js';
-import { config } from './config.js'; // Import the singleton instance
 import { log } from './utils.js';
+import { initializeCore } from './core.js';
 
 import './mxp.js'; // Import MXP module
 import './modal-input.js'; // ModalInput module
@@ -16,153 +19,95 @@ import { JujuMapper } from './juju-mapper.js'; // JujuMapper module
 import { Havoc } from './havoc-core.js'; // Havoc module
 import { HavocMapper } from './havoc-mapper.js'; // HavocMapper module
 import { Facebook } from './fb.js';
-import { DirectionPanel } from './direction-panel.js'; // Import our direction panel
-import { CommunicationPanel } from './communication-panel.js'; // Import our communication panel
+
+const j = jQuery;
 
 window.jQuery = window.$ = jQuery;
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize config
+// Wait for DOM to be ready
+j(document).ready(async () => {
+  console.log('DOM Content Loaded');
+
+  // Initialize config first
   await config.initialize();
 
-  log('Config initialized:', config);
+  // Debug screen dimensions and mobile detection
+  console.log('Device Info:', {
+    isMobile: config.device.mobile,
+    isTouch: config.device.touch,
+    deviceConfig: config.device
+  });
 
+  // Initialize core
   initializeCore();
 
-  if (config.chatterbox) {
-    new ChatterBox({
-      drag: true, // Enable dragging
-      snap: true, // Enable snapping to other windows
-    });
-  }
+  // Mobile-only layout
+  // Hide communication panel
+  config.communicationPanel = false;
 
-  // control panel has to be loaded before other modules, so the sitelist
-  // is available
-  if (config.controlPanel) {
-    let cp = new ControlPanel({
-      drag: true, // Enable dragging
-      snap: true, // Enable snapping to other windows
-    });
-    await cp.initialize();
-  }
-
-  if (config.groupTab) {
-    let gt = new GroupTab();
-    await gt.initialize();
-  }
-
-  if (config.initialIFrame) {
-    log('Loading initial URL:', config.initialURL);
-
-    const helpFrame = new IFrame({
-      id: '#help-frame',
-      title: config.initialIFrame.title || 'Help',
-      url: config.initialIFrame.URL,
-      // refresh: 30, // refresh every 30 seconds
-      css: {
-        width: 800,
-        height: 600,
-        top: 0,
-        left: '30%',
-      },
-      handle: '.handle', // Use the default Window handle class
-      drag: true, // Enable dragging
-      snap: true, // Enable snapping to other windows
-    });
-
-    helpFrame.initialize();
-  }
-
-  if (config.loginPrompt) {
-    new LoginPrompt({
-      gmcp: true,
-      placeholder: 'Username',
-      // ... other options
-    });
-  }
-
-  if (config.mapper) {
-    new JujuMapper({
-      title: 'Juju Mapper',
-      css: {
-        width: 800,
-        height: 600,
-        top: 0,
-        left: '30%',
-      },
-      drag: true, // Enable dragging
-      snap: true, // Enable snapping to other windows
-    });
-  }
-
-  if (config.misty) {
-    new MistyBars({
-      title: 'Custom Bars',
-      listen: 'custom-event',
-    });
-  }
-
-  if (config.havoc) {
-    new Havoc({
-      title: 'Havoc',
-      css: {
-        width: 800,
-        height: 600,
-        top: 0,
-        left: '30%',
-      },
-      drag: true, // Enable dragging
-      snap: true, // Enable snapping to other windows
-    });
-    // Initialize HavocMapper if configured
-    if (config.havocMapper) {
-      new HavocMapper({
-        title: 'Havoc Mapper',
-        css: {
-          width: 800,
-          height: 600,
-          top: 0,
-          left: '30%',
-        },
-        drag: true, // Enable dragging
-        snap: true, // Enable snapping to other windows
-      });
-    }
-  }
-
-  if (config.fb) {
-    Facebook.initialize();
-  }
-
-  // Initialize our direction panel
+  // Position direction panel at bottom
   if (config.macroPanel) {
-    let directionPanel = new DirectionPanel({
+    const directionPanel = new DirectionPanel({
       title: 'Direction Panel',
       css: {
-        width: 400,
-        height: 300,
-        top: 100,
-        right: 100,
+        width: '100vw',
+        height: '100px',
+        bottom: '38px', // 30px tab bar + 8px gap
+        left: 0,
+        top: 'auto',
+        right: 'auto'
       },
-      drag: true,
-      snap: true,
+      drag: false,
+      snap: false,
+      noresize: true
     });
+
     await directionPanel.initialize();
   }
 
-  // Initialize our communication panel
-  if (config.communicationPanel) {
-    let communicationPanel = new CommunicationPanel({
-      title: 'Communication',
-      css: {
-        width: 400,
-        height: 300,
-        top: 100,
-        right: 520, // Position it to the left of the direction panel
-      },
-      drag: true,
-      snap: true,
-    });
-    await communicationPanel.initialize();
+  // Initialize tab bar
+  if (config.device.mobile) {
+    j('body').append(`
+      <div id="tab-bar" style="
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 30px;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1000;
+        border-top: 1px solid #666;
+      ">
+        <button class="tab-btn active">Chat</button>
+        <button class="tab-btn">Map</button>
+        <button class="tab-btn">Settings</button>
+      </div>
+    `);
+
+    // Add tab bar styles
+    j('head').append(`
+      <style>
+        .tab-btn {
+          background: transparent;
+          border: none;
+          color: #fff;
+          padding: 5px 15px;
+          font-size: 14px;
+          cursor: pointer;
+          opacity: 0.7;
+          transition: opacity 0.2s;
+        }
+        .tab-btn:hover {
+          opacity: 1;
+        }
+        .tab-btn.active {
+          opacity: 1;
+          border-bottom: 2px solid #fff;
+        }
+      </style>
+    `);
   }
 });

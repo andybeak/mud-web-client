@@ -51,17 +51,25 @@ export class Config {
     this.fb = false;
     this.fbAppId = null;
     this.macroPanel = true;
-    this.communicationPanel = true;
+    this.communicationPanel = false;
 
     // Device detection
     this.device = {
       touch: 'ontouchstart' in window,
       lowres: j(window).width() <= 640 && j(window).height() <= 640,
-      mobile: j(window).width() <= 640 && j(window).height() <= 640,
+      mobile: 'ontouchstart' in window || (j(window).width() <= 640 && j(window).height() <= 640),
       tablet: 'ontouchstart' in window && j(window).width() > 640,
       width: j(window).width(),
       height: j(window).height(),
     };
+
+    // Log device detection for debugging
+    console.log('Device Detection:', {
+      touch: this.device.touch,
+      mobile: this.device.mobile,
+      width: this.device.width,
+      height: this.device.height
+    });
 
     this.view = `${this.host}:${this.port}:${window.screen.width}x${window.screen.height}`;
   }
