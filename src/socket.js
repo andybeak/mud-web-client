@@ -77,6 +77,16 @@ export class Socket {
     log('Socket: connected');
     this.connected = true;
 
+    // Add the immediate connection request here
+    const connectionRequest = {
+      host: this.options.host,
+      port: parseInt(this.options.port),
+      connect: 1
+    };
+    
+    log('Socket: sending connection request:', connectionRequest);
+    this.ws.send(JSON.stringify(connectionRequest));
+
     if (!this.options.proxy && this.options.type === 'telnet') {
       this.ws.send(
         stringify({

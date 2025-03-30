@@ -8,9 +8,9 @@ export class Config {
   constructor() {
     // Default values
     this.debug = false;
-    this.host = 'muds.maldorne.org';
-    this.port = '5010';
-    this.name = 'House of Maldorne';
+    this.host = 'retromud.org';
+    this.port = '3000';
+    this.name = 'RetroMUD';
     this.profile = null;
     this.width = 800;
     this.height = j(window).height() - 80;
@@ -27,7 +27,8 @@ export class Config {
     this.dev = false;
     this.onfirst = false;
     this.separator = ';';
-    this.proxy = 'wss://play.maldorne.org:6200/';
+    // this.proxy = 'wss://play.maldorne.org:6200/';
+    this.proxy = 'wss://mud-proxy.whealinghold.net:8000/';
     this.uncompressed = false;
     this.useMuProtocol = false;
     this.chatterbox = false;
