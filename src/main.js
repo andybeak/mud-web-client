@@ -50,12 +50,12 @@ j(document).ready(async () => {
     const directionPanel = new DirectionPanel({
       title: 'Direction Panel',
       css: {
-        width: '100vw',
+        width: config.device.mobile ? '100vw' : '400px',
         height: '100px',
         bottom: '38px', // 30px tab bar + 8px gap
-        left: 0,
-        top: 'auto',
-        right: 'auto'
+        left: config.device.mobile ? 0 : 'auto',
+        right: config.device.mobile ? 'auto' : 100,
+        top: config.device.mobile ? 'auto' : 100,
       },
       drag: false,
       snap: false,

@@ -13,7 +13,7 @@ export class DirectionPanel {
     this.options = {
       title: 'Direction Panel',
       css: {
-        width: 400,
+        width: config.device.mobile ? '100vw' : '400px',
         height: 100,
         top: 100,
         right: 100,
