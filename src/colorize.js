@@ -119,13 +119,13 @@ export class Colorize {
             color = `color:${this.colors256[parseInt(codes[index + 1])]};`;
             xterm = true;
           } else if (codes[index - 1] === '48') {
-            bgcolor = ` background-color:${this.colors256[parseInt(codes[index + 1])]};`;
+            // bgcolor = ` background-color:${this.colors256[parseInt(codes[index + 1])]};`;
             xterm = true;
           }
         } else if (!xterm && this.ansi[code]) {
           color = `color:${bold ? this.ansi[`1;${code}`] : this.ansi[code]};`;
         } else if (!xterm && this.bgansi[code]) {
-          bgcolor = ` background-color:${bold ? this.bgansi[`1;${code}`] : this.bgansi[code]};`;
+          // bgcolor = ` background-color:${bold ? this.bgansi[`1;${code}`] : this.bgansi[code]};`;
         }
       });
 

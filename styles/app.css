@@ -327,6 +327,7 @@ button.disabled {
 	color: #ccc; 
 	clear: both; 
 	overflow: hidden;
+    opacity: 0.9;
 }
 
 .app .window .tab-content {
