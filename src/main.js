@@ -16,7 +16,7 @@ import { JujuMapper } from './juju-mapper.js'; // JujuMapper module
 import { Havoc } from './havoc-core.js'; // Havoc module
 import { HavocMapper } from './havoc-mapper.js'; // HavocMapper module
 import { Facebook } from './fb.js';
-import { MacroPanel } from './macro-panel.js'; // Import our macro panel
+import { DirectionPanel } from './direction-panel.js'; // Import our direction panel
 
 window.jQuery = window.$ = jQuery;
 
@@ -133,10 +133,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     Facebook.initialize();
   }
 
-  // Initialize our macro panel
+  // Initialize our direction panel
   if (config.macroPanel) {
-    let macroPanel = new MacroPanel({
-      title: 'Macro Panel',
+    let directionPanel = new DirectionPanel({
+      title: 'Direction Panel',
       css: {
         width: 400,
         height: 300,
@@ -146,6 +146,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       drag: true,
       snap: true,
     });
-    await macroPanel.initialize();
+    await directionPanel.initialize();
   }
 });

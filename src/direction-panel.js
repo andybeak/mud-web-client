@@ -6,12 +6,12 @@ import { log } from './utils.js';
 
 const j = jQuery;
 
-export class MacroPanel {
+export class DirectionPanel {
   constructor(options = {}) {
     if (!window.user) return;
 
     this.options = {
-      title: 'Macro Panel',
+      title: 'Direction Panel',
       css: {
         width: 400,
         height: 300,
@@ -19,10 +19,10 @@ export class MacroPanel {
         right: 100,
       },
       ...options,
-      id: '#macro-panel',
+      id: '#direction-panel',
     };
 
-    this.id = '#macro-panel';
+    this.id = '#direction-panel';
     this.mobile = config.device.mobile;
     this.touch = config.device.touch;
     this.pref = window.user.pref;
@@ -36,7 +36,7 @@ export class MacroPanel {
 
     // Listen for scrollview_ready to ensure we don't miss any events
     Event.listen('scrollview_ready', () => {
-      console.log('ScrollView ready, MacroPanel initialized');
+      console.log('ScrollView ready, DirectionPanel initialized');
       // Force an initial update of compass buttons
       if (config.ScrollView) {
         const output = j(`${config.ScrollView.id} .out`);
@@ -239,7 +239,7 @@ export class MacroPanel {
           transform: none;
           box-shadow: none;
         }
-        #macro-panel .content {
+        #direction-panel .content {
           background: transparent !important;
         }
       </style>
@@ -250,7 +250,13 @@ export class MacroPanel {
     // Handle compass button clicks
     j(this.id).on('click', '.compass-btn, .special-exit-btn', (e) => {
       const btn = j(e.currentTarget);
-      if (btn.hasClass('disabled') || btn.hasClass('center')) return;
+      if (btn.hasClass('disabled')) return;
+      
+      // Handle center button (look command)
+      if (btn.hasClass('center')) {
+        config.socket.send('look');
+        return;
+      }
       
       const direction = btn.data('direction');
       let command = '';
@@ -352,9 +358,9 @@ export class MacroPanel {
   }
 
   exposeToConfig() {
-    config.MacroPanel = this;
+    config.DirectionPanel = this;
     setTimeout(() => {
-      Event.fire('macropanel_ready', this);
+      Event.fire('directionpanel_ready', this);
     }, 500);
   }
 } 
