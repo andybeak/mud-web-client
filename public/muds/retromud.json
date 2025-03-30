@@ -1,0 +1,32 @@
+{
+  "name": "RetroMUD",
+  "host": "retromud.org",
+  "port": "3000",
+  "proxy": "wss://mud-proxy.whealinghold.net:8000",
+  "controlPanel": false,
+  "macros": true,
+  "useFakeUser": true,
+  "chatterbox": false,
+  "clean": true,
+  "solo": true,
+  "fakeUser": {
+    "id": "single-user",
+    "username": "Player",
+    "guest": false,
+    "pref": {
+      "win": {},
+      "sitelist": {
+        "RetroMUD": {
+          "settings": [],
+          "macros": [
+            ["F1", "help", "Help", true],
+            ["F2", "score", "Score", true],
+            ["F3", "inventory", "Inventory", true],
+            ["F4", "equipment", "Equipment", true]
+          ],
+          "triggers": []
+        }
+      }
+    }
+  }
+}

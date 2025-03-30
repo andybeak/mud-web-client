@@ -16,6 +16,7 @@ import { JujuMapper } from './juju-mapper.js'; // JujuMapper module
 import { Havoc } from './havoc-core.js'; // Havoc module
 import { HavocMapper } from './havoc-mapper.js'; // HavocMapper module
 import { Facebook } from './fb.js';
+import { MacroPanel } from './macro-panel.js'; // Import our macro panel
 
 window.jQuery = window.$ = jQuery;
 
@@ -130,5 +131,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (config.fb) {
     Facebook.initialize();
+  }
+
+  // Initialize our macro panel
+  if (config.macroPanel) {
+    let macroPanel = new MacroPanel({
+      title: 'Macro Panel',
+      css: {
+        width: 400,
+        height: 300,
+        top: 100,
+        right: 100,
+      },
+      drag: true,
+      snap: true,
+    });
+    await macroPanel.initialize();
   }
 });

@@ -34,12 +34,12 @@ export class Config {
     this.chatterbox = false;
     this.chatterboxConfig = null;
     this.settings = [];
-    this.controlPanel = false;
+    this.controlPanel = true;
     this.groupTab = false;
     this.initialIFrame = null;
-    this.macros = false;
-    this.triggers = false;
-    this.useFakeUser = false;
+    this.macros = true;
+    this.triggers = true;
+    this.useFakeUser = true;
     this.fakeUser = null;
     this.saveRemotePrefs = false;
     this.loginPrompt = false;
@@ -50,6 +50,7 @@ export class Config {
     this.gui = true;
     this.fb = false;
     this.fbAppId = null;
+    this.macroPanel = true;
 
     // Device detection
     this.device = {
@@ -99,7 +100,7 @@ export class Config {
 
   async initialize() {
     // Load MUD config from json files
-    const mudName = param('mud') || 'example';
+    const mudName = param('mud') || 'retromud';
     const mudConfig = await this.loadMudConfig(mudName);
 
     if (mudConfig) {
@@ -170,6 +171,7 @@ export class Config {
     this.gui = param('gui') || this.gui;
     this.fb = param('fb') || this.fb;
     this.fbAppId = param('fbAppId') || this.fbAppId;
+    this.macroPanel = param('macroPanel') || this.macroPanel;
 
     if (param('initialURL')) {
       let url = param('initialURL');
