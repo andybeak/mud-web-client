@@ -290,7 +290,9 @@ export class DirectionPanel {
       let command = '';
       
       if (btn.hasClass('special-exit-btn')) {
-        command = direction; // For special exits, use the direction as the command
+        // For special exits, use the button text as the command
+        command = btn.text().trim();
+        console.log('Special exit clicked, sending command:', command);
       } else {
         switch(direction) {
           case 'north': command = 'n'; break;
@@ -362,6 +364,8 @@ export class DirectionPanel {
   }
 
   updateCompassButtons(exits) {
+    console.log('Updating compass buttons with exits:', exits);
+    
     // Define compass directions
     const compassDirections = [
       'north', 'south', 'east', 'west',
@@ -383,12 +387,34 @@ export class DirectionPanel {
 
     // Update special exits
     const specialExits = exits.filter(exit => !compassDirections.includes(exit));
+    console.log('Special exits found:', specialExits);
+    
     const $specialExitsContainer = j(this.id).find('.special-exits');
     $specialExitsContainer.empty();
 
     specialExits.forEach(exit => {
+      console.log('Creating special exit button for:', exit);
       const $btn = j(`<button class="special-exit-btn" data-direction="${exit}">${exit}</button>`);
       $specialExitsContainer.append($btn);
+    });
+
+    // Re-attach event listeners to new special exit buttons
+    const newButtons = $specialExitsContainer.find('.special-exit-btn');
+    console.log('New special exit buttons created:', newButtons.length);
+    
+    newButtons.on('click', (e) => {
+      console.log('Special exit button clicked');
+      const btn = j(e.currentTarget);
+      const command = btn.text().trim();
+      console.log('Sending special exit command:', command);
+      
+      if (config.ScrollView && config.ScrollView.send) {
+        config.ScrollView.send(command);
+      } else if (config.socket && config.socket.send) {
+        config.socket.send(command);
+      } else {
+        console.log('No valid send method found');
+      }
     });
   }
 
