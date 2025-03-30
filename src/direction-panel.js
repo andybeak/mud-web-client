@@ -242,6 +242,18 @@ export class DirectionPanel {
         #direction-panel .content {
           background: transparent !important;
         }
+        .chat-message {
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .chat-message .content {
+          width: 100%;
+          box-sizing: border-box;
+          word-break: break-word;
+        }
+        .chat-message .character {
+          margin-right: 4px;
+        }
       </style>
     `);
   }

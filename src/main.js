@@ -17,6 +17,7 @@ import { Havoc } from './havoc-core.js'; // Havoc module
 import { HavocMapper } from './havoc-mapper.js'; // HavocMapper module
 import { Facebook } from './fb.js';
 import { DirectionPanel } from './direction-panel.js'; // Import our direction panel
+import { CommunicationPanel } from './communication-panel.js'; // Import our communication panel
 
 window.jQuery = window.$ = jQuery;
 
@@ -147,5 +148,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       snap: true,
     });
     await directionPanel.initialize();
+  }
+
+  // Initialize our communication panel
+  if (config.communicationPanel) {
+    let communicationPanel = new CommunicationPanel({
+      title: 'Communication',
+      css: {
+        width: 400,
+        height: 300,
+        top: 100,
+        right: 520, // Position it to the left of the direction panel
+      },
+      drag: true,
+      snap: true,
+    });
+    await communicationPanel.initialize();
   }
 });

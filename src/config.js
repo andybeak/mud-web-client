@@ -51,6 +51,7 @@ export class Config {
     this.fb = false;
     this.fbAppId = null;
     this.macroPanel = true;
+    this.communicationPanel = true;
 
     // Device detection
     this.device = {
@@ -172,6 +173,7 @@ export class Config {
     this.fb = param('fb') || this.fb;
     this.fbAppId = param('fbAppId') || this.fbAppId;
     this.macroPanel = param('macroPanel') || this.macroPanel;
+    this.communicationPanel = param('communicationPanel') || this.communicationPanel;
 
     if (param('initialURL')) {
       let url = param('initialURL');
