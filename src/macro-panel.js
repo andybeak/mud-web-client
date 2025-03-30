@@ -34,6 +34,27 @@ export class MacroPanel {
     this.initLayout();
     this.initEventListeners();
 
+    // Listen for scrollview_ready to ensure we don't miss any events
+    Event.listen('scrollview_ready', () => {
+      console.log('ScrollView ready, MacroPanel initialized');
+      // Force an initial update of compass buttons
+      if (config.ScrollView) {
+        const output = j(`${config.ScrollView.id} .out`);
+        const text = output.text();
+        console.log('Initial text:', text);
+        if (text.includes('Obvious exits are:')) {
+          const exitsText = text.split('Obvious exits are:')[1].split('.')[0].trim();
+          const exits = exitsText
+            .replace(/ and /g, ',')
+            .split(',')
+            .map(e => e.trim())
+            .filter(e => e.length > 0);
+          console.log('Initial exits:', exits);
+          this.updateCompassButtons(exits);
+        }
+      }
+    });
+
     if (!this.touch) {
       j(`${this.id} .nice`).niceScroll({
         cursorborder: 'none',
@@ -69,15 +90,15 @@ export class MacroPanel {
         <div class="section" style="background: transparent;">
           <div class="compass-rose">
             <div class="compass-row">
-              <button class="compass-btn north">↑</button>
+              <button class="compass-btn north" data-direction="north">↑</button>
             </div>
             <div class="compass-row">
-              <button class="compass-btn west">←</button>
+              <button class="compass-btn west" data-direction="west">←</button>
               <button class="compass-btn center">•</button>
-              <button class="compass-btn east">→</button>
+              <button class="compass-btn east" data-direction="east">→</button>
             </div>
             <div class="compass-row">
-              <button class="compass-btn south">↓</button>
+              <button class="compass-btn south" data-direction="south">↓</button>
             </div>
           </div>
         </div>
@@ -137,6 +158,18 @@ export class MacroPanel {
           transform: none;
           box-shadow: none;
         }
+        .compass-btn.disabled {
+          background: #222;
+          border-color: #444;
+          color: #666;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+        .compass-btn.disabled:hover {
+          transform: none;
+          box-shadow: none;
+        }
         #macro-panel .content {
           background: transparent !important;
         }
@@ -147,7 +180,10 @@ export class MacroPanel {
   initEventListeners() {
     // Handle compass button clicks
     j(this.id).on('click', '.compass-btn', (e) => {
-      const direction = j(e.currentTarget).attr('class').split(' ')[1];
+      const btn = j(e.currentTarget);
+      if (btn.hasClass('disabled') || btn.hasClass('center')) return;
+      
+      const direction = btn.data('direction');
       let command = '';
       
       switch(direction) {
@@ -158,7 +194,7 @@ export class MacroPanel {
       }
       
       if (command) {
-        log('Sending command:', command);
+        console.log('Sending command:', command);
         config.socket.send(command);
       }
     });
@@ -177,9 +213,54 @@ export class MacroPanel {
       
       if (command) {
         e.preventDefault();
-        log('Sending command:', command);
+        console.log('Sending command:', command);
         config.socket.send(command);
       }
+    });
+
+    // Listen for new text in the main window
+    Event.listen('scrollview_add', (text) => {
+      console.log('Received text:', text);
+      // Remove HTML tags and decode entities
+      const cleanText = text.replace(/<[^>]*>/g, '')
+                           .replace(/&nbsp;/g, ' ')
+                           .replace(/&lt;/g, '<')
+                           .replace(/&gt;/g, '>');
+      
+      if (cleanText.includes('Obvious exits are:')) {
+        console.log('Found exit text:', cleanText);
+        // Extract exits from the text
+        const exitsText = cleanText.split('Obvious exits are:')[1].split('.')[0].trim();
+        console.log('Extracted exits text:', exitsText);
+        
+        // Handle the 'and' case and clean up the text
+        const exits = exitsText
+          .replace(/ and /g, ',') // Replace 'and' with comma
+          .split(',')
+          .map(e => e.trim())
+          .filter(e => e.length > 0); // Remove empty strings
+        
+        console.log('Parsed exits:', exits);
+        
+        // Update compass buttons
+        this.updateCompassButtons(exits);
+      }
+    });
+  }
+
+  updateCompassButtons(exits) {
+    console.log('Updating compass buttons with exits:', exits);
+    // Enable/disable buttons based on available exits
+    j(this.id).find('.compass-btn').each((_, btn) => {
+      const $btn = j(btn);
+      if ($btn.hasClass('center')) return;
+      
+      const direction = $btn.data('direction');
+      const isAvailable = exits.includes(direction);
+      console.log(`Button ${direction}: available=${isAvailable}, exits=${exits.join(', ')}`);
+      
+      $btn.prop('disabled', !isAvailable);
+      $btn.toggleClass('disabled', !isAvailable);
     });
   }
 
