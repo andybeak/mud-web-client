@@ -85,28 +85,35 @@ export class MacroPanel {
   initLayout() {
     j(`${this.id} .content`).append(`
       <div class="panel-content" style="background: transparent;">
-        <div class="section" style="background: transparent;">
-          <div class="compass-rose">
-            <div class="compass-row">
-              <button class="compass-btn northwest" data-direction="northwest">↖</button>
-              <button class="compass-btn north" data-direction="north">↑</button>
-              <button class="compass-btn northeast" data-direction="northeast">↗</button>
-            </div>
-            <div class="compass-row">
-              <button class="compass-btn west" data-direction="west">←</button>
-              <button class="compass-btn center">•</button>
-              <button class="compass-btn east" data-direction="east">→</button>
-            </div>
-            <div class="compass-row">
-              <button class="compass-btn southwest" data-direction="southwest">↙</button>
-              <button class="compass-btn south" data-direction="south">↓</button>
-              <button class="compass-btn southeast" data-direction="southeast">↘</button>
+        <div class="compass-sections">
+          <div class="section compass-rose-section" style="background: transparent;">
+            <div class="compass-rose">
+              <div class="compass-row">
+                <button class="compass-btn northwest" data-direction="northwest">↖</button>
+                <button class="compass-btn north" data-direction="north">↑</button>
+                <button class="compass-btn northeast" data-direction="northeast">↗</button>
+              </div>
+              <div class="compass-row">
+                <button class="compass-btn west" data-direction="west">←</button>
+                <button class="compass-btn center">•</button>
+                <button class="compass-btn east" data-direction="east">→</button>
+              </div>
+              <div class="compass-row">
+                <button class="compass-btn southwest" data-direction="southwest">↙</button>
+                <button class="compass-btn south" data-direction="south">↓</button>
+                <button class="compass-btn southeast" data-direction="southeast">↘</button>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="section" style="background: transparent;">
-          <h3>Quick Actions</h3>
-          <div class="content"></div>
+          <div class="section vertical-section" style="background: transparent;">
+            <div class="vertical-buttons">
+              <button class="compass-btn up" data-direction="up">⬆</button>
+              <button class="compass-btn down" data-direction="down">⬇</button>
+            </div>
+          </div>
+          <div class="section special-exits-section" style="background: transparent;">
+            <div class="special-exits"></div>
+          </div>
         </div>
       </div>
     `);
@@ -114,6 +121,61 @@ export class MacroPanel {
     // Add some basic styling
     j('head').append(`
       <style>
+        .compass-sections {
+          display: flex;
+          gap: 20px;
+          padding: 10px;
+        }
+        .compass-rose-section {
+          flex: 1;
+        }
+        .vertical-section {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+        }
+        .special-exits-section {
+          flex: 1;
+        }
+        .special-exits {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          padding: 10px;
+        }
+        .special-exit-btn {
+          padding: 6px 10px;
+          border-radius: 4px;
+          border: 2px solid #888;
+          background: #444;
+          color: #fff;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          white-space: nowrap;
+        }
+        .special-exit-btn:hover {
+          background: #555;
+          transform: scale(1.05);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .special-exit-btn:active {
+          background: #666;
+          transform: scale(0.95);
+        }
+        .special-exit-btn.disabled {
+          background: #222;
+          border-color: #444;
+          color: #666;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+        .special-exit-btn.disabled:hover {
+          transform: none;
+          box-shadow: none;
+        }
         .compass-rose {
           display: flex;
           flex-direction: column;
@@ -125,6 +187,11 @@ export class MacroPanel {
           display: flex;
           gap: 5px;
           justify-content: center;
+        }
+        .vertical-buttons {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
         }
         .compass-btn {
           width: 40px;
@@ -181,22 +248,28 @@ export class MacroPanel {
 
   initEventListeners() {
     // Handle compass button clicks
-    j(this.id).on('click', '.compass-btn', (e) => {
+    j(this.id).on('click', '.compass-btn, .special-exit-btn', (e) => {
       const btn = j(e.currentTarget);
       if (btn.hasClass('disabled') || btn.hasClass('center')) return;
       
       const direction = btn.data('direction');
       let command = '';
       
-      switch(direction) {
-        case 'north': command = 'n'; break;
-        case 'south': command = 's'; break;
-        case 'east': command = 'e'; break;
-        case 'west': command = 'w'; break;
-        case 'northeast': command = 'ne'; break;
-        case 'southeast': command = 'se'; break;
-        case 'southwest': command = 'sw'; break;
-        case 'northwest': command = 'nw'; break;
+      if (btn.hasClass('special-exit-btn')) {
+        command = direction; // For special exits, use the direction as the command
+      } else {
+        switch(direction) {
+          case 'north': command = 'n'; break;
+          case 'south': command = 's'; break;
+          case 'east': command = 'e'; break;
+          case 'west': command = 'w'; break;
+          case 'northeast': command = 'ne'; break;
+          case 'southeast': command = 'se'; break;
+          case 'southwest': command = 'sw'; break;
+          case 'northwest': command = 'nw'; break;
+          case 'up': command = 'up'; break;
+          case 'down': command = 'down'; break;
+        }
       }
       
       if (command) {
@@ -248,7 +321,14 @@ export class MacroPanel {
   }
 
   updateCompassButtons(exits) {
-    // Enable/disable buttons based on available exits
+    // Define compass directions
+    const compassDirections = [
+      'north', 'south', 'east', 'west',
+      'northeast', 'southeast', 'southwest', 'northwest',
+      'up', 'down'
+    ];
+
+    // Update compass buttons
     j(this.id).find('.compass-btn').each((_, btn) => {
       const $btn = j(btn);
       if ($btn.hasClass('center')) return;
@@ -258,6 +338,16 @@ export class MacroPanel {
       
       $btn.prop('disabled', !isAvailable);
       $btn.toggleClass('disabled', !isAvailable);
+    });
+
+    // Update special exits
+    const specialExits = exits.filter(exit => !compassDirections.includes(exit));
+    const $specialExitsContainer = j(this.id).find('.special-exits');
+    $specialExitsContainer.empty();
+
+    specialExits.forEach(exit => {
+      const $btn = j(`<button class="special-exit-btn" data-direction="${exit}">${exit}</button>`);
+      $specialExitsContainer.append($btn);
     });
   }
 
