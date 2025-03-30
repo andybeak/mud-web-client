@@ -41,7 +41,6 @@ export class MacroPanel {
       if (config.ScrollView) {
         const output = j(`${config.ScrollView.id} .out`);
         const text = output.text();
-        console.log('Initial text:', text);
         if (text.includes('Obvious exits are:')) {
           const exitsText = text.split('Obvious exits are:')[1].split('.')[0].trim();
           const exits = exitsText
@@ -49,7 +48,6 @@ export class MacroPanel {
             .split(',')
             .map(e => e.trim())
             .filter(e => e.length > 0);
-          console.log('Initial exits:', exits);
           this.updateCompassButtons(exits);
         }
       }
@@ -90,7 +88,9 @@ export class MacroPanel {
         <div class="section" style="background: transparent;">
           <div class="compass-rose">
             <div class="compass-row">
+              <button class="compass-btn northwest" data-direction="northwest">↖</button>
               <button class="compass-btn north" data-direction="north">↑</button>
+              <button class="compass-btn northeast" data-direction="northeast">↗</button>
             </div>
             <div class="compass-row">
               <button class="compass-btn west" data-direction="west">←</button>
@@ -98,7 +98,9 @@ export class MacroPanel {
               <button class="compass-btn east" data-direction="east">→</button>
             </div>
             <div class="compass-row">
+              <button class="compass-btn southwest" data-direction="southwest">↙</button>
               <button class="compass-btn south" data-direction="south">↓</button>
+              <button class="compass-btn southeast" data-direction="southeast">↘</button>
             </div>
           </div>
         </div>
@@ -125,13 +127,13 @@ export class MacroPanel {
           justify-content: center;
         }
         .compass-btn {
-          width: 50px;
-          height: 50px;
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
           border: 2px solid #888;
           background: #444;
           color: #fff;
-          font-size: 24px;
+          font-size: 20px;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -191,10 +193,13 @@ export class MacroPanel {
         case 'south': command = 's'; break;
         case 'east': command = 'e'; break;
         case 'west': command = 'w'; break;
+        case 'northeast': command = 'ne'; break;
+        case 'southeast': command = 'se'; break;
+        case 'southwest': command = 'sw'; break;
+        case 'northwest': command = 'nw'; break;
       }
       
       if (command) {
-        console.log('Sending command:', command);
         config.socket.send(command);
       }
     });
@@ -213,14 +218,12 @@ export class MacroPanel {
       
       if (command) {
         e.preventDefault();
-        console.log('Sending command:', command);
         config.socket.send(command);
       }
     });
 
     // Listen for new text in the main window
     Event.listen('scrollview_add', (text) => {
-      console.log('Received text:', text);
       // Remove HTML tags and decode entities
       const cleanText = text.replace(/<[^>]*>/g, '')
                            .replace(/&nbsp;/g, ' ')
@@ -228,10 +231,8 @@ export class MacroPanel {
                            .replace(/&gt;/g, '>');
       
       if (cleanText.includes('Obvious exits are:')) {
-        console.log('Found exit text:', cleanText);
         // Extract exits from the text
         const exitsText = cleanText.split('Obvious exits are:')[1].split('.')[0].trim();
-        console.log('Extracted exits text:', exitsText);
         
         // Handle the 'and' case and clean up the text
         const exits = exitsText
@@ -240,8 +241,6 @@ export class MacroPanel {
           .map(e => e.trim())
           .filter(e => e.length > 0); // Remove empty strings
         
-        console.log('Parsed exits:', exits);
-        
         // Update compass buttons
         this.updateCompassButtons(exits);
       }
@@ -249,7 +248,6 @@ export class MacroPanel {
   }
 
   updateCompassButtons(exits) {
-    console.log('Updating compass buttons with exits:', exits);
     // Enable/disable buttons based on available exits
     j(this.id).find('.compass-btn').each((_, btn) => {
       const $btn = j(btn);
@@ -257,7 +255,6 @@ export class MacroPanel {
       
       const direction = $btn.data('direction');
       const isAvailable = exits.includes(direction);
-      console.log(`Button ${direction}: available=${isAvailable}, exits=${exits.join(', ')}`);
       
       $btn.prop('disabled', !isAvailable);
       $btn.toggleClass('disabled', !isAvailable);
