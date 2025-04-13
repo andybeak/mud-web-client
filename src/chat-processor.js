@@ -16,7 +16,7 @@ export class ChatProcessor {
     let processedText = '';
     
     for (const line of lines) {
-      if (this.isChatLine(line)) {
+      if (this.isChatLine(line) || this.isDirectMessage(line)) {
         // If we have a partial message, process it
         if (this.partialMessage) {
           this.processCompleteMessage(this.partialMessage);
@@ -59,6 +59,13 @@ export class ChatProcessor {
     return asciiLine.match(pattern);
   }
 
+  isDirectMessage(line) {
+    // Convert non-ASCII characters to a placeholder for pattern matching
+    const asciiLine = line.replace(/[^\x00-\x7F]/g, '');
+    const pattern = /^(\S+)\s+telepathically contacts you with '([^']+)'$/;
+    return asciiLine.match(pattern);
+  }
+
   isMessageContinuation(line) {
     // Convert non-ASCII characters to a placeholder for pattern matching
     const asciiLine = line.replace(/[^\x00-\x7F]/g, '');
@@ -93,6 +100,21 @@ export class ChatProcessor {
         break;
       }
       contentLines.push(line);
+    }
+    
+    // Check if this is a direct message
+    const directMessageMatch = headerLine.match(/^(\S+)\s+telepathically contacts you with '([^']+)'$/);
+    if (directMessageMatch) {
+      const [, character, content] = directMessageMatch;
+      // Fire event with structured message data
+      Event.fire('chat_message', {
+        timestamp: Date.now(),
+        time: new Date().toLocaleTimeString(),
+        character: character,
+        channel: 'telepathy',
+        content: content
+      });
+      return;
     }
     
     // Convert non-ASCII characters in header line for pattern matching

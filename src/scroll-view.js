@@ -382,12 +382,7 @@ export class ScrollView {
           this.ws.send(value);
           this.cmds.push(value);
           this.cmdi++;
-
-          if (this.keepcom) {
-            input[0].select();
-          } else {
-            input.val('');
-          }
+          input.val('');
         } else {
           this.ws.send('\r\n');
         }

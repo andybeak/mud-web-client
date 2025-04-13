@@ -17,7 +17,9 @@
       "win": {},
       "sitelist": {
         "RetroMUD": {
-          "settings": [],
+          "settings": [
+            { "id": "keepcom", "value": false }
+          ],
           "macros": [
             ["F1", "help", "Help", true],
             ["F2", "score", "Score", true],
