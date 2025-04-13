@@ -114,11 +114,20 @@ export class ImageryPanel {
           scrollbar-width: thin;
           scrollbar-color: #888 #333;
         }
-        .last-room {
+        .room-title {
           color: #fff;
           padding: 10px;
           font-size: 16px;
           font-weight: bold;
+          text-align: center;
+          background: #2a2a2a;
+          border-radius: 3px;
+          margin-bottom: 5px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        .room-title:hover {
+          background: #3a3a3a;
         }
         .imagery-content::-webkit-scrollbar {
           width: 8px;
@@ -148,7 +157,24 @@ export class ImageryPanel {
   }
 
   initEventListeners() {
-    // No need to create the room_visited listener here as it's already created in the constructor
+    // Listen for room visits to update the room list
+    Event.listen('room_visited', (data) => {
+      if (data && data.roomData) {
+        this.lastRoom = data.roomData.title;
+        this.updateImagery(data.roomData);
+      }
+    });
+
+    // Add click handler for room titles
+    j(`${this.id} .room-title`).click((e) => {
+      const roomTitle = j(e.target).data('room');
+      if (roomTitle) {
+        const roomData = config.RoomProcessor.getRoomData(roomTitle);
+        if (roomData) {
+          this.updateImagery(roomData);
+        }
+      }
+    });
   }
 
   updateLastRoom() {
@@ -165,33 +191,28 @@ export class ImageryPanel {
     const $content = j(`${this.id} .imagery-content`);
     $content.empty();
 
-    // Add room title
-    $content.append(`<div class="room-title">${roomData.title}</div>`);
+    // Get recent rooms and remove duplicates
+    const recentRooms = config.RoomProcessor.getRecentRooms(20); // Get more than we need to ensure we have enough unique rooms
+    const uniqueRooms = new Map();
     
-    // Add room description
-    $content.append(`<div class="room-description">${roomData.description}</div>`);
-    
-    // Add items if any
-    if (roomData.items && roomData.items.length > 0) {
-      $content.append('<div class="room-items-title">Items:</div>');
-      roomData.items.forEach(item => {
-        $content.append(`<div class="room-item">${item}</div>`);
-      });
-    }
-    
-    // Add monsters if any
-    if (roomData.monsters && roomData.monsters.length > 0) {
-      $content.append('<div class="room-monsters-title">Monsters:</div>');
-      roomData.monsters.forEach(monster => {
-        $content.append(`<div class="room-monster">${monster}</div>`);
-      });
-    }
-    
-    // Add exits if any
-    if (roomData.exits && roomData.exits.length > 0) {
-      $content.append('<div class="room-exits-title">Exits:</div>');
-      $content.append(`<div class="room-exits">${roomData.exits.join(', ')}</div>`);
-    }
+    // Add rooms to map (this will automatically handle duplicates)
+    recentRooms.forEach(room => {
+      if (room && room.title) {
+        uniqueRooms.set(room.title, room);
+      }
+    });
+
+    // Convert to array and take first 10
+    const uniqueRecentRooms = Array.from(uniqueRooms.values()).slice(0, 10);
+
+    // Display the list of unique recent rooms
+    uniqueRecentRooms.forEach(room => {
+      $content.append(`
+        <div class="room-title" data-room="${room.title}">
+          ${room.title}
+        </div>
+      `);
+    });
   }
 
   exposeToConfig() {
