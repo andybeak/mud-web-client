@@ -191,5 +191,18 @@ jQuery(async () => {
         }
       </style>
     `);
+  } else {
+    // Add desktop toolbar button styles
+    j('head').append(`
+      <style>
+        #tmp-toolbar .btn {
+          opacity: 1 !important;
+          color: #fff !important;
+        }
+        #tmp-toolbar .btn.disabled {
+          opacity: 0.7 !important;
+        }
+      </style>
+    `);
   }
 });

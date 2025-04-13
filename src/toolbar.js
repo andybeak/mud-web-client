@@ -8,6 +8,7 @@ export class Toolbar {
   constructor() {
     this.communicationPanel = null;
     this.macroWindow = null;
+    this.directionPanel = null;
   }
 
   initialize() {
@@ -35,6 +36,15 @@ export class Toolbar {
       if (button.hasClass('macro-btn')) {
         if (this.macroWindow) {
           this.macroWindow.toggle();
+          button.toggleClass('disabled');
+        }
+        return;
+      }
+
+      // Special handling for Direction button
+      if (button.hasClass('direction-btn')) {
+        if (this.directionPanel) {
+          this.directionPanel.toggle();
           button.toggleClass('disabled');
         }
         return;
@@ -84,24 +94,12 @@ export class Toolbar {
       </button>
     `);
 
-    // Add other window buttons
-    j('.window').each(function () {
-      const $window = j(this);
-      const id = $window.attr('id');
-      const title = $window.get(0).win?.title || id;
-
-      const button = `
-        <button href="#${id}" class="btn kbutton">
-          ${title}
-        </button>
-      `;
-
-      j('#tmp-toolbar').append(button);
-
-      if (!$window.is(':visible')) {
-        j('#tmp-toolbar .btn:last').addClass('disabled');
-      }
-    });
+    // Add Direction Panel button
+    j('#tmp-toolbar').append(`
+      <button class="btn kbutton direction-btn" title="Toggle Direction Panel">
+        Direction
+      </button>
+    `);
 
     return this;
   }
@@ -117,6 +115,10 @@ export class Toolbar {
 
   setMacroWindow(window) {
     this.macroWindow = window;
+  }
+
+  setDirectionPanel(panel) {
+    this.directionPanel = panel;
   }
 }
 
