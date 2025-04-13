@@ -25,6 +25,12 @@ textarea {
     background-color: rgba(0, 0, 0, 0.6) !important;
 }
 
+/* Fix modal positioning */
+.modal {
+    left: 5% !important;
+    margin: 0 !important;
+}
+
 @media (min-device-width: 1025px) {
     a, .menu-dropdown span.subtitle {
         transition: color 200ms ease-in-out 0s;

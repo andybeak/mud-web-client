@@ -1,3 +1,6 @@
+// Storage key for custom macros
+export const STORAGE_KEY = 'mud-custom-macros';
+
 // Default macro configurations
 export const defaultMacros = [
   { name: 'Look', command: 'look', category: 'basic' },

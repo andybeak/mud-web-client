@@ -89,7 +89,15 @@ export class Modal {
               ${o.text ? `<div class="modal-text-content">${o.text}</div>` : o.html || ''}
             </div>
             <div class="modal-footer">
-              <button class="btn btn-primary kbutton ok-button dismiss mo-dismiss" data-bs-dismiss="modal">OK</button>
+              ${!o.buttons ? '<button class="btn btn-primary kbutton ok-button dismiss mo-dismiss" data-bs-dismiss="modal">OK</button>' : ''}
+              ${o.buttons ? o.buttons.map((button, index) => {
+                const buttonClass = button.class || 'btn-secondary';
+                return `
+                  <button class="btn ${buttonClass} kbutton custom-${index}" ${button.keep ? '' : 'data-bs-dismiss="modal"'}>
+                    ${button.text}
+                  </button>
+                `;
+              }).join('') : ''}
             </div>
           </div>
         </div>
@@ -97,6 +105,31 @@ export class Modal {
     `;
 
     j('body').append(modalTemplate);
+
+    this.modalInstance = new BootstrapModal(j('.modal').get(0));
+    console.log('Created modal instance:', this.modalInstance);
+
+    // Add click handlers for custom buttons using event delegation
+    if (o.buttons) {
+      j('.modal-footer').on('click', '.custom-0, .custom-1', (e) => {
+        const index = parseInt(j(e.target).attr('class').match(/custom-(\d+)/)[1]);
+        const button = o.buttons[index];
+        console.log(`Button ${index} clicked:`, button);
+        console.log('Button element:', e.target);
+        
+        if (button.click) {
+          console.log('Executing button click handler');
+          button.click(this.modalInstance);
+        }
+        
+        if (!button.keep) {
+          console.log('Attempting to hide modal');
+          this.modalInstance.hide();
+        }
+      });
+    }
+
+    this.modalInstance.show();
 
     this.setupButtons();
     this.setupLinks();
@@ -113,15 +146,6 @@ export class Modal {
       j('.modal .btn-close').remove();
     }
 
-    // Initialize Bootstrap 5 modal
-    const modalEl = document.querySelector('.modal');
-    this.modalInstance = new BootstrapModal(modalEl, {
-      backdrop: this.options.backdrop ? true : 'static',
-      keyboard: true,
-    });
-
-    j('.modal .mo-dismiss').on('click', () => this.close());
-
     if (o.css) {
       if (o.css.width) {
         o.css['margin-left'] = -(o.css.width / 2);
@@ -129,7 +153,7 @@ export class Modal {
       j('.modal').css(o.css);
     }
 
-    this.modalInstance.show();
+    j('.modal .mo-dismiss').on('click', () => this.close());
   }
 
   setupButtons() {
@@ -191,31 +215,10 @@ export class Modal {
   }
 
   setupLinks() {
-    const o = this.options;
-    if (!o.links) return;
-
-    j('.modal-footer .modal-links').remove();
-    j('.modal-footer').prepend(`
-      <div class="modal-links float-start" 
-           style="position: relative; z-index: 1; font-size: 11px; opacity: 0.7">
-      </div>
-    `);
-
-    if (Array.isArray(o.links)) {
-      o.links.forEach((link, index) => {
+    if (this.options.links) {
+      this.options.links.forEach(({ text, cmd }, index) => {
         j('.modal-links').append(`
-          <a class="link-${index}" 
-             ${link.keep ? '' : 'data-bs-dismiss="modal"'}>
-            ${link.text}
-          </a><br>
-        `);
-        j('.modal-links .link-' + index).click(link.click);
-        if (link.css) j('.modal-links .link-' + index).css(link.css);
-      });
-    } else {
-      Object.entries(o.links).forEach(([text, cmd], index) => {
-        j('.modal-links').append(`
-          <a class="link-${index}" data-bs-dismiss="modal">
+          <a class="link-${index}" href="#">
             ${text}
           </a><br>
         `);
