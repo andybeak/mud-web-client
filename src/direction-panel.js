@@ -417,10 +417,8 @@ export class DirectionPanel {
   }
 
   show() {
-    console.log('Direction panel show called');
     if (!this.visible) {
       this.visible = true;
-      console.log('Setting direction panel to visible');
       j(this.id).css({
         display: 'block',
         visibility: 'visible',
@@ -432,10 +430,8 @@ export class DirectionPanel {
   }
 
   hide() {
-    console.log('Direction panel hide called');
     if (this.visible) {
       this.visible = false;
-      console.log('Setting direction panel to hidden');
       j(this.id).css({
         display: 'none',
         visibility: 'hidden',
@@ -447,7 +443,6 @@ export class DirectionPanel {
   }
 
   toggle() {
-    console.log('Direction panel toggle called');
     if (this.visible) {
       this.hide();
     } else {

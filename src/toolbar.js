@@ -44,13 +44,9 @@ export class Toolbar {
 
       // Special handling for Direction button
       if (button.hasClass('direction-btn')) {
-        console.log('Direction button clicked');
-        console.log('Current direction panel reference:', this.directionPanel);
         if (this.directionPanel) {
-          console.log('Toggling direction panel...');
           this.directionPanel.toggle();
           button.toggleClass('disabled');
-          console.log('Direction panel visibility:', this.directionPanel.visible);
         } else {
           console.log('No direction panel reference found!');
         }

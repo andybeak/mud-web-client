@@ -99,30 +99,7 @@ jQuery(async () => {
     config.Toolbar.setCommunicationPanel(communicationPanel);
   }
 
-  // Initialize imagery panel
-  const imageryPanel = new ImageryPanel({
-    title: 'Imagery',
-    css: {
-      width: config.device.mobile ? '100vw' : '600px',
-      height: '400px',
-      bottom: '38px', // 30px tab bar + 8px gap
-      left: config.device.mobile ? 0 : 'auto',
-      right: config.device.mobile ? 'auto' : 100,
-      top: config.device.mobile ? 'auto' : 100,
-    },
-    drag: !config.device.touch,
-    snap: true
-  });
-
-  await imageryPanel.initialize();
-
-  // Connect ImageryPanel to Toolbar if in desktop mode
-  if (!config.embed && !config.device.mobile && !config.kong && config.Toolbar) {
-    config.Toolbar.setImageryPanel(imageryPanel);
-  }
-
   // Initialize direction panel
-  console.log('Creating direction panel...');
   const directionPanel = new DirectionPanel({
     title: 'Direction Panel',
     css: {
@@ -138,15 +115,34 @@ jQuery(async () => {
     noresize: true
   });
 
-  console.log('Initializing direction panel...');
   await directionPanel.initialize();
-  console.log('Direction panel initialized:', directionPanel);
-
+  
   // Connect DirectionPanel to Toolbar if in desktop mode
   if (!config.embed && !config.device.mobile && !config.kong && config.Toolbar) {
-    console.log('Connecting direction panel to toolbar...');
     config.Toolbar.setDirectionPanel(directionPanel);
-    console.log('Toolbar direction panel reference:', config.Toolbar.directionPanel);
+  }
+
+  // Initialize imagery panel
+  const imageryPanel = new ImageryPanel({
+    title: 'Imagery',
+    css: {
+      width: config.device.mobile ? '100vw' : '600px',
+      height: '400px',
+      top: '10px',
+      right: config.device.mobile ? 'auto' : 100,
+      left: config.device.mobile ? 0 : 'auto',
+      bottom: 'auto',
+      position: 'fixed'
+    },
+    drag: !config.device.touch,
+    snap: true
+  });
+
+  await imageryPanel.initialize();
+
+  // Connect ImageryPanel to Toolbar if in desktop mode
+  if (!config.embed && !config.device.mobile && !config.kong && config.Toolbar) {
+    config.Toolbar.setImageryPanel(imageryPanel);
   }
 
   // Initialize macro window if enabled
