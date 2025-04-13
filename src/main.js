@@ -8,6 +8,7 @@ import { defaultMacros, windowStyle } from './config/macros.js';
 import jQuery from 'jquery';
 import { log } from './utils.js';
 import { initializeCore } from './core.js';
+import { RoomProcessor } from './room-processor.js';
 
 import './mxp.js'; // Import MXP module
 import './modal-input.js'; // ModalInput module
@@ -33,6 +34,10 @@ jQuery(async () => {
 
   // Initialize core
   initializeCore();
+
+  // Initialize room processor
+  const roomProcessor = new RoomProcessor();
+  config.RoomProcessor = roomProcessor;
 
   // Add tab click handlers using event delegation
   j('body').on('click', '.tab-btn', (e) => {
