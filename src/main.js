@@ -64,11 +64,11 @@ jQuery(async () => {
           config.CommunicationPanel.toggle();
         }
         break;
-      case 'map':
-        // Handle map tab
-        break;
-      case 'settings':
-        // Handle settings tab
+      case 'imagery':
+        // Toggle the imagery panel through config
+        if (config.ImageryPanel) {
+          config.ImageryPanel.toggle();
+        }
         break;
     }
   });
@@ -123,22 +123,49 @@ jQuery(async () => {
   }
 
   // Initialize imagery panel
+  console.log('Initializing imagery panel with config:', {
+    mobile: config.device.mobile,
+    touch: config.device.touch,
+    viewport: {
+      width: window.innerWidth,
+      height: window.innerHeight
+    }
+  });
+
   const imageryPanel = new ImageryPanel({
     title: 'Imagery',
     css: {
       width: config.device.mobile ? '100vw' : '600px',
-      height: '400px',
-      top: '10px',
-      right: config.device.mobile ? 'auto' : 100,
-      left: config.device.mobile ? 0 : 'auto',
+      height: config.device.mobile ? '200px' : '400px',
+      top: config.device.mobile ? '10px' : '10px',
+      left: config.device.mobile ? '0' : 'auto',
+      right: config.device.mobile ? 'auto' : '100px',
       bottom: 'auto',
-      position: 'fixed'
+      position: 'fixed',
+      'z-index': config.device.mobile ? '104' : '9999',
+      'background-color': 'rgba(0, 0, 0, 0.8)',
+      'border-radius': '0',
+      'border': config.device.mobile ? 'none' : '1px solid #666',
+      'outline': '2px solid red',
+      'overflow-y': 'auto',
+      'max-height': '50vh'
     },
     drag: !config.device.touch,
     snap: true
   });
 
   await imageryPanel.initialize();
+
+  // Log the panel's position after initialization
+  setTimeout(() => {
+    const panel = j('#imagery-panel');
+    console.log('Imagery panel position:', {
+      offset: panel.offset(),
+      width: panel.width(),
+      height: panel.height(),
+      css: panel.css(['position', 'top', 'left', 'right', 'bottom', 'z-index'])
+    });
+  }, 100);
 
   // Connect ImageryPanel to Toolbar if in desktop mode
   if (!config.embed && !config.device.mobile && !config.kong && config.Toolbar) {
@@ -197,7 +224,7 @@ jQuery(async () => {
       ">
         <button class="tab-btn" data-tab="macro">Macro</button>
         <button class="tab-btn" data-tab="chat">Chat</button>
-        <button class="tab-btn" data-tab="settings">Settings</button>
+        <button class="tab-btn" data-tab="imagery">Imagery</button>
       </div>
     `);
 

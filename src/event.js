@@ -118,10 +118,6 @@ export const Event = {
       return 0;
     }
 
-    if (event === 'room_visited') {
-      console.log('Event.fire: room_visited', data);
-    }
-
     return this.q[event].reduce(
       (acc, callback) => callback(acc, caller),
       data,
@@ -144,10 +140,6 @@ export const Event = {
     if (!this.q[event]) {
       log(`Event.js: No such event to subscribe to: ${event}`);
       return 0;
-    }
-
-    if (event === 'room_visited') {
-      console.log('Event.listen: room_visited', callback);
     }
 
     this.q[event].push(callback);

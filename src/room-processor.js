@@ -35,12 +35,9 @@ export class RoomProcessor {
     this.monstersBuffer = []; // Buffer for collecting room monsters
     this.exitsBuffer = []; // Buffer for collecting room exits
     
-    console.log('RoomProcessor: Initializing event listener for before_html');
     // Hook into the text processing pipeline
     Event.listen('before_html', (text) => {
-      console.log('RoomProcessor: Received before_html event with text:', text.substring(0, 100) + '...');
       const processedText = this.process(text);
-      console.log('RoomProcessor: Processed text:', processedText.substring(0, 100) + '...');
       return processedText;
     });
   }
@@ -70,17 +67,14 @@ export class RoomProcessor {
    * @returns {string} - Processed text with room data extracted
    */
   process(text) {
-    console.log('RoomProcessor: Starting to process text');
     const lines = text.split('\n');
     let processedText = '';
     
     for (const line of lines) {
       const formattedLine = this.formatAnsiText(line);
-      console.log('RoomProcessor: Processing line:', formattedLine.substring(0, 50) + '...');
       
       // If we're not in a room and this looks like a room title
       if (!this.currentRoom && this.isRoomLine(line)) {
-        console.log('RoomProcessor: Found room title:', this.cleanText(line));
         this.currentRoom = {
           title: this.cleanText(line),
           description: '',
@@ -101,7 +95,6 @@ export class RoomProcessor {
       if (this.currentRoom) {
         // Check if this is the start of the description
         if (formattedLine.startsWith('[ANSI:37;40;0m][ANSI:1;34m]  ')) {
-          console.log('RoomProcessor: Found description start');
           this.inDescription = true;
           this.descriptionBuffer.push(this.cleanText(line).trim());
           processedText += line + '\n';
@@ -112,7 +105,6 @@ export class RoomProcessor {
         if (this.inDescription) {
           // Check for end of description
           if (formattedLine.includes('Obvious exits are')) {
-            console.log('RoomProcessor: Found exits line');
             this.inDescription = false;
             processedText += line + '\n';
             continue;
@@ -143,7 +135,6 @@ export class RoomProcessor {
         if (formattedLine.includes('[ANSI:1;32m]')) {
           const item = this.cleanText(line);
           if (item) {
-            console.log('RoomProcessor: Found item:', item);
             this.itemsBuffer.push(item);
           }
           processedText += line + '\n';
@@ -154,7 +145,6 @@ export class RoomProcessor {
         if (formattedLine.includes('[ANSI:1;35m]')) {
           const monster = this.cleanText(line);
           if (monster) {
-            console.log('RoomProcessor: Found monster:', monster);
             this.monstersBuffer.push(monster);
           }
           processedText += line + '\n';
@@ -169,13 +159,11 @@ export class RoomProcessor {
             this.exitsBuffer = exitMatches.map(exit => {
               return exit.replace(/\[ANSI:1;31m\]/, '').replace(/\[ANSI:37;40;0m\]/, '').trim();
             });
-            console.log('RoomProcessor: Found exits:', this.exitsBuffer);
           }
         }
 
         // Check if we've reached the end of the room data (stats line)
         if (formattedLine.includes('Hp:') && formattedLine.includes('Sp:') && formattedLine.includes('Ep:')) {
-          console.log('RoomProcessor: Found stats line, processing complete room');
           // Join all buffered description lines with spaces
           this.currentRoom.description = this.descriptionBuffer.join(' ');
           this.processCompleteRoom(this.currentRoom);
@@ -242,7 +230,6 @@ export class RoomProcessor {
       
       // Store room data
       this.visitedRooms.set(room.title, room);
-      
       console.log('RoomProcessor: Firing room_visited event with data:', {
         timestamp: timestamp,
         roomName: room.title,

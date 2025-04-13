@@ -29,27 +29,15 @@ export class ImageryPanel {
     this.lastRoom = null;
     this.exposeToConfig();
     
-    console.log('ImageryPanel: Creating event listener for room_visited');
     // Create the event listener
     this.roomListener = Event.listen('room_visited', (data) => {
-      console.log('ImageryPanel: Received room_visited event:', data);
       if (!data) {
-        console.log('ImageryPanel: No data received in event');
         return;
       }
       if (data.roomData) {
-        console.log('ImageryPanel: Room data available:', {
-          title: data.roomData.title,
-          description: data.roomData.description,
-          items: data.roomData.items,
-          monsters: data.roomData.monsters,
-          exits: data.roomData.exits
-        });
         this.lastRoom = data.roomData.title;
         this.updateLastRoom();
         this.updateImagery(data.roomData);
-      } else {
-        console.log('ImageryPanel: No room data in event:', data);
       }
     });
   }
@@ -76,10 +64,6 @@ export class ImageryPanel {
       transparent: true,
       css: {
         ...this.options.css,
-        zIndex: 9999,
-        'background-color': 'rgba(0, 0, 0, 0.8)',
-        'border-radius': '8px',
-        'border': '1px solid #666',
         display: 'none',
         visibility: 'hidden',
         opacity: '0'
@@ -88,22 +72,11 @@ export class ImageryPanel {
       snap: true,
     });
 
-    // Force the size after window creation
+    // Remove the force size CSS that was overriding our mobile settings
     j(this.id).css({
-      width: this.mobile ? '100vw' : '400px',
-      height: '100px',
-      minWidth: this.mobile ? '100vw' : '400px',
-      minHeight: '100px',
-      maxWidth: this.mobile ? '100vw' : '400px',
-      maxHeight: '100px',
       display: 'none',
       visibility: 'hidden',
-      opacity: '0',
-      'background-color': 'rgba(0, 0, 0, 0.8)',
-      'border-radius': '8px',
-      'border': '1px solid #666',
-      zIndex: 9999,
-      position: 'fixed'
+      opacity: '0'
     });
 
     j(this.id).get(0).win = this.win;
@@ -170,16 +143,6 @@ export class ImageryPanel {
           background: #1a1a1a !important;
           height: 100% !important;
         }
-        @media (max-width: 768px) {
-          #imagery-panel {
-            width: 100vw !important;
-            height: 50vh !important;
-            bottom: 70px !important;
-            left: 0 !important;
-            right: auto !important;
-            top: auto !important;
-          }
-        }
       </style>
     `);
   }
@@ -189,33 +152,24 @@ export class ImageryPanel {
   }
 
   updateLastRoom() {
-    console.log('Updating last room display:', this.lastRoom);
     if (this.lastRoom) {
       j(`${this.id} .last-room`).text(`Last Room: ${this.lastRoom}`);
-      console.log('Last room text updated in DOM');
-    } else {
-      console.log('No last room to display');
     }
   }
 
   updateImagery(roomData) {
-    console.log('ImageryPanel: Updating imagery with room data:', roomData);
     if (!roomData) {
-      console.log('ImageryPanel: No room data provided');
       return;
     }
 
     const $content = j(`${this.id} .imagery-content`);
-    console.log('ImageryPanel: Current content:', $content.html());
     $content.empty();
 
     // Add room title
     $content.append(`<div class="room-title">${roomData.title}</div>`);
-    console.log('ImageryPanel: Added title:', roomData.title);
     
     // Add room description
     $content.append(`<div class="room-description">${roomData.description}</div>`);
-    console.log('ImageryPanel: Added description');
     
     // Add items if any
     if (roomData.items && roomData.items.length > 0) {
@@ -223,7 +177,6 @@ export class ImageryPanel {
       roomData.items.forEach(item => {
         $content.append(`<div class="room-item">${item}</div>`);
       });
-      console.log('ImageryPanel: Added items:', roomData.items);
     }
     
     // Add monsters if any
@@ -232,17 +185,13 @@ export class ImageryPanel {
       roomData.monsters.forEach(monster => {
         $content.append(`<div class="room-monster">${monster}</div>`);
       });
-      console.log('ImageryPanel: Added monsters:', roomData.monsters);
     }
     
     // Add exits if any
     if (roomData.exits && roomData.exits.length > 0) {
       $content.append('<div class="room-exits-title">Exits:</div>');
       $content.append(`<div class="room-exits">${roomData.exits.join(', ')}</div>`);
-      console.log('ImageryPanel: Added exits:', roomData.exits);
     }
-
-    console.log('ImageryPanel: Final content:', $content.html());
   }
 
   exposeToConfig() {
@@ -253,24 +202,35 @@ export class ImageryPanel {
   }
 
   show() {
-    console.log('Showing imagery panel');
-    if (!this.visible) {
-      this.visible = true;
-      j(this.id).css({
-        display: 'block',
-        visibility: 'visible',
-        opacity: '1'
-      });
-      Event.fire('window_show', this.id);
-      console.log('Panel visibility set to true');
-      // Update the display with the last room when shown
-      this.updateLastRoom();
-    }
-    return this;
+    this.visible = true;
+    const windowElement = j(this.id);
+    
+    // Set all visibility properties at once
+    windowElement.css({
+      'display': 'block',
+      'visibility': 'visible',
+      'opacity': '1',
+      'z-index': this.mobile ? '104' : '9999',
+      'position': 'fixed',
+      'top': '10px',
+      'left': this.mobile ? '10px' : 'auto',
+      'right': this.mobile ? '10px' : '100px',
+      'width': this.mobile ? 'calc(100vw - 20px)' : '600px',
+      'height': this.mobile ? '200px' : '400px',
+      'max-height': '50vh',
+      'overflow-y': 'auto',
+      'background-color': 'rgba(0, 0, 0, 0.8)',
+      'border-radius': '0',
+      'border': this.mobile ? 'none' : '1px solid #666',
+      'outline': '2px solid red'
+    });
+    
+    // Force a reflow to ensure proper sizing
+    windowElement.height();
+    this.win.bringToFront();
   }
 
   hide() {
-    console.log('Hiding imagery panel');
     if (this.visible) {
       this.visible = false;
       j(this.id).css({
@@ -279,7 +239,6 @@ export class ImageryPanel {
         opacity: '0'
       });
       Event.fire('window_hide', this.id);
-      console.log('Panel visibility set to false');
     }
     return this;
   }
