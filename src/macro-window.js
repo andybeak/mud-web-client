@@ -373,7 +373,6 @@ export class MacroWindow {
   }
 
   toggle() {
-    console.log('MacroWindow: Toggling visibility');
     if (this.visible) {
       this.hide();
     } else {

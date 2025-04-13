@@ -28,6 +28,7 @@ export class CommunicationPanel {
     this.pref = window.user.pref;
     this.messages = []; // Array to store messages
     this.maxMessages = 50; // Increased maximum number of messages to store
+    this.visible = false; // Start hidden
     this.exposeToConfig();
   }
 
@@ -51,11 +52,19 @@ export class CommunicationPanel {
       closeable: true,
       class: 'nofade',
       css: {
-        width: '600px',
-        height: '400px',
-        top: '100px',
-        right: '100px',
+        width: this.mobile ? '100vw' : '600px',
+        height: this.mobile ? '50vh' : '400px',
+        top: this.mobile ? 'auto' : '100px',
+        right: this.mobile ? 'auto' : '100px',
+        bottom: this.mobile ? '70px' : 'auto',
+        left: this.mobile ? '0' : 'auto',
         zIndex: 101,
+        display: 'none',
+        visibility: 'hidden',
+        opacity: '0',
+        'background-color': '#1a1a1a',
+        'border-radius': '8px',
+        'border': '1px solid #444'
       },
       drag: !this.touch,
       snap: true,
@@ -63,10 +72,18 @@ export class CommunicationPanel {
 
     // Force the size after window creation
     j(this.id).css({
-      width: '600px',
-      height: '400px',
-      minWidth: '600px',
-      minHeight: '400px'
+      width: this.mobile ? '100vw' : '600px',
+      height: this.mobile ? '50vh' : '400px',
+      minWidth: this.mobile ? '100vw' : '600px',
+      minHeight: this.mobile ? '200px' : '400px',
+      maxWidth: this.mobile ? '100vw' : '600px',
+      maxHeight: this.mobile ? '50vh' : '400px',
+      display: 'none',
+      visibility: 'hidden',
+      opacity: '0',
+      'background-color': '#1a1a1a',
+      'border-radius': '8px',
+      'border': '1px solid #444'
     });
 
     j(this.id).get(0).win = this.win;
@@ -95,10 +112,10 @@ export class CommunicationPanel {
           flex: 1;
           overflow-y: auto;
           padding: 5px;
-          background: rgba(0, 0, 0, 0.9);
+          background: #1a1a1a;
           border-radius: 4px;
           font-family: monospace;
-          font-size: 14px;
+          font-size: ${this.mobile ? '12px' : '14px'};
           scrollbar-width: thin;
           scrollbar-color: #888 #333;
         }
@@ -148,10 +165,23 @@ export class CommunicationPanel {
           word-break: break-word;
         }
         #communication-panel .content {
-          background: rgba(0, 0, 0, 0.9) !important;
+          background: #1a1a1a !important;
+          padding: 0 !important;
+          height: 100% !important;
         }
         #communication-panel .panel-content {
-          background: rgba(0, 0, 0, 0.9) !important;
+          background: #1a1a1a !important;
+          height: 100% !important;
+        }
+        @media (max-width: 768px) {
+          #communication-panel {
+            width: 100vw !important;
+            height: 50vh !important;
+            bottom: 70px !important;
+            left: 0 !important;
+            right: auto !important;
+            top: auto !important;
+          }
         }
       </style>
     `);
@@ -242,6 +272,16 @@ export class CommunicationPanel {
     // Only process messages from retro or chat channels
     if (channel !== 'retro' && channel !== 'chat') return;
 
+    // Check for duplicate messages
+    const isDuplicate = this.messages.some(msg => 
+      msg.character === character && 
+      msg.channel === channel && 
+      msg.content === content
+    );
+
+    // Skip if this is a duplicate message
+    if (isDuplicate) return;
+
     // Add new message to the beginning of the array
     this.messages.unshift({
       character,
@@ -285,5 +325,55 @@ export class CommunicationPanel {
     setTimeout(() => {
       Event.fire('communicationpanel_ready', this);
     }, 500);
+  }
+
+  show() {
+    this.visible = true;
+    const windowElement = j(this.id);
+    
+    // Set all visibility properties at once
+    windowElement.css({
+        'display': 'block',
+        'visibility': 'visible',
+        'opacity': '1',
+        'z-index': '200 !important',
+        'position': 'fixed',
+        'width': this.mobile ? '100vw' : '600px',
+        'height': this.mobile ? '50vh' : '400px',
+        'min-height': this.mobile ? '200px' : '400px',
+        'max-height': this.mobile ? '50vh' : '400px',
+        'bottom': this.mobile ? '70px' : 'auto',
+        'left': this.mobile ? '0' : 'auto',
+        'right': this.mobile ? 'auto' : '100px',
+        'top': this.mobile ? 'auto' : '100px',
+        'overflow': 'hidden auto',
+        'background-color': '#1a1a1a',
+        'border-radius': '8px',
+        'border': '1px solid #444'
+    });
+    
+    // Force a reflow to ensure proper sizing
+    windowElement.height();
+    this.win.bringToFront();
+  }
+
+  hide() {
+    this.visible = false;
+    const windowElement = j(this.id);
+    
+    // Set all visibility properties at once
+    windowElement.css({
+        'display': 'none',
+        'visibility': 'hidden',
+        'opacity': '0'
+    });
+  }
+
+  toggle() {
+    if (this.visible) {
+      this.hide();
+    } else {
+      this.show();
+    }
   }
 } 

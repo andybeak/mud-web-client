@@ -30,14 +30,12 @@ export class DirectionPanel {
   }
 
   async initialize() {
-    console.log('Initializing DirectionPanel');
     this.initWindow();
     this.initLayout();
     this.initEventListeners();
 
     // Listen for scrollview_ready to ensure we don't miss any events
     Event.listen('scrollview_ready', () => {
-      console.log('ScrollView ready, DirectionPanel initialized');
       // Force an initial update of compass buttons
       if (config.ScrollView) {
         const output = j(`${config.ScrollView.id} .out`);
@@ -250,37 +248,21 @@ export class DirectionPanel {
   }
 
   initEventListeners() {
-    console.log('Setting up event listeners for DirectionPanel');
-    
     // Add click handlers for each button
     const buttons = j(this.id).find('.compass-btn, .special-exit-btn');
-    console.log('Found buttons:', buttons.length);
     
     buttons.on('click', (e) => {
-      console.log('Button clicked');
       const btn = j(e.currentTarget);
       if (btn.hasClass('disabled')) {
-        console.log('Button is disabled, ignoring click');
         return;
       }
       
-      // Debug logging
-      console.log('Button clicked:', {
-        isCenter: btn.hasClass('center'),
-        direction: btn.data('direction'),
-        ScrollView: config.ScrollView,
-        socket: config.socket
-      });
-      
       // If it's the middle button (center), send "look" command
       if (btn.hasClass('center')) {
-        console.log('Center button clicked, sending look command');
         if (config.ScrollView && config.ScrollView.send) {
           config.ScrollView.send('look');
         } else if (config.socket && config.socket.send) {
           config.socket.send('look');
-        } else {
-          console.log('No valid send method found');
         }
         return;
       }
@@ -292,7 +274,6 @@ export class DirectionPanel {
       if (btn.hasClass('special-exit-btn')) {
         // For special exits, use the button text as the command
         command = btn.text().trim();
-        console.log('Special exit clicked, sending command:', command);
       } else {
         switch(direction) {
           case 'north': command = 'n'; break;
@@ -309,13 +290,10 @@ export class DirectionPanel {
       }
       
       if (command) {
-        console.log('Sending command:', command);
         if (config.ScrollView && config.ScrollView.send) {
           config.ScrollView.send(command);
         } else if (config.socket && config.socket.send) {
           config.socket.send(command);
-        } else {
-          console.log('No valid send method found');
         }
       }
     });
@@ -340,6 +318,8 @@ export class DirectionPanel {
 
     // Listen for new text in the main window
     Event.listen('scrollview_add', (text) => {
+      if (!text) return; // Skip if text is undefined or null
+      
       // Remove HTML tags and decode entities
       const cleanText = text.replace(/<[^>]*>/g, '')
                            .replace(/&nbsp;/g, ' ')
@@ -364,8 +344,6 @@ export class DirectionPanel {
   }
 
   updateCompassButtons(exits) {
-    console.log('Updating compass buttons with exits:', exits);
-    
     // Define compass directions
     const compassDirections = [
       'north', 'south', 'east', 'west',
@@ -387,33 +365,26 @@ export class DirectionPanel {
 
     // Update special exits
     const specialExits = exits.filter(exit => !compassDirections.includes(exit));
-    console.log('Special exits found:', specialExits);
     
     const $specialExitsContainer = j(this.id).find('.special-exits');
     $specialExitsContainer.empty();
 
     specialExits.forEach(exit => {
-      console.log('Creating special exit button for:', exit);
       const $btn = j(`<button class="special-exit-btn" data-direction="${exit}">${exit}</button>`);
       $specialExitsContainer.append($btn);
     });
 
     // Re-attach event listeners to new special exit buttons
     const newButtons = $specialExitsContainer.find('.special-exit-btn');
-    console.log('New special exit buttons created:', newButtons.length);
     
     newButtons.on('click', (e) => {
-      console.log('Special exit button clicked');
       const btn = j(e.currentTarget);
       const command = btn.text().trim();
-      console.log('Sending special exit command:', command);
       
       if (config.ScrollView && config.ScrollView.send) {
         config.ScrollView.send(command);
       } else if (config.socket && config.socket.send) {
         config.socket.send(command);
-      } else {
-        console.log('No valid send method found');
       }
     });
   }

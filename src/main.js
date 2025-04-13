@@ -36,8 +36,6 @@ jQuery(async () => {
   j('body').on('click', '.tab-btn', (e) => {
     const tab = j(e.target).data('tab');
     
-    console.log('Tab clicked:', tab);
-    
     // Remove active class from all buttons
     j('.tab-btn').removeClass('active');
     
@@ -52,6 +50,12 @@ jQuery(async () => {
           config.MacroWindow.toggle();
         }
         break;
+      case 'chat':
+        // Toggle the communication panel through config
+        if (config.CommunicationPanel) {
+          config.CommunicationPanel.toggle();
+        }
+        break;
       case 'map':
         // Handle map tab
         break;
@@ -62,8 +66,25 @@ jQuery(async () => {
   });
 
   // Mobile-only layout
-  // Hide communication panel
-  config.communicationPanel = false;
+  // Enable communication panel
+  config.communicationPanel = true;
+
+  // Initialize communication panel
+  const communicationPanel = new CommunicationPanel({
+    title: 'Communication',
+    css: {
+      width: config.device.mobile ? '100vw' : '600px',
+      height: '400px',
+      bottom: '38px', // 30px tab bar + 8px gap
+      left: config.device.mobile ? 0 : 'auto',
+      right: config.device.mobile ? 'auto' : 100,
+      top: config.device.mobile ? 'auto' : 100,
+    },
+    drag: !config.device.touch,
+    snap: true
+  });
+
+  await communicationPanel.initialize();
 
   // Position direction panel at bottom
   if (config.macroPanel) {
@@ -102,7 +123,7 @@ jQuery(async () => {
         border-top: 1px solid #666;
       ">
         <button class="tab-btn" data-tab="macro">Macro</button>
-        <button class="tab-btn" data-tab="map">Map</button>
+        <button class="tab-btn" data-tab="chat">Chat</button>
         <button class="tab-btn" data-tab="settings">Settings</button>
       </div>
     `);
