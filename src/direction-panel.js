@@ -26,6 +26,7 @@ export class DirectionPanel {
     this.mobile = config.device.mobile;
     this.touch = config.device.touch;
     this.pref = window.user.pref;
+    this.visible = true; // Start visible since panel is visible in DOM
     this.exposeToConfig();
   }
 
@@ -72,10 +73,29 @@ export class DirectionPanel {
         zIndex: 101,
         'background-color': 'rgba(0, 0, 0, 0.8)',
         'border-radius': '8px',
-        'border': '1px solid #666'
+        'border': '1px solid #666',
+        display: 'block',
+        visibility: 'visible',
+        opacity: '1'
       },
       drag: !this.touch,
       snap: true,
+    });
+
+    // Force the size after window creation
+    j(this.id).css({
+      width: this.mobile ? '100vw' : '400px',
+      height: '100px',
+      minWidth: this.mobile ? '100vw' : '400px',
+      minHeight: '100px',
+      maxWidth: this.mobile ? '100vw' : '400px',
+      maxHeight: '100px',
+      display: 'block',
+      visibility: 'visible',
+      opacity: '1',
+      'background-color': 'rgba(0, 0, 0, 0.8)',
+      'border-radius': '8px',
+      'border': '1px solid #666'
     });
 
     j(this.id).get(0).win = this.win;
@@ -394,5 +414,45 @@ export class DirectionPanel {
     setTimeout(() => {
       Event.fire('directionpanel_ready', this);
     }, 500);
+  }
+
+  show() {
+    console.log('Direction panel show called');
+    if (!this.visible) {
+      this.visible = true;
+      console.log('Setting direction panel to visible');
+      j(this.id).css({
+        display: 'block',
+        visibility: 'visible',
+        opacity: '1'
+      });
+      Event.fire('window_show', this.id);
+    }
+    return this;
+  }
+
+  hide() {
+    console.log('Direction panel hide called');
+    if (this.visible) {
+      this.visible = false;
+      console.log('Setting direction panel to hidden');
+      j(this.id).css({
+        display: 'none',
+        visibility: 'hidden',
+        opacity: '0'
+      });
+      Event.fire('window_hide', this.id);
+    }
+    return this;
+  }
+
+  toggle() {
+    console.log('Direction panel toggle called');
+    if (this.visible) {
+      this.hide();
+    } else {
+      this.show();
+    }
+    return this;
   }
 }

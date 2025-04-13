@@ -280,4 +280,33 @@ export class RoomProcessor {
   getRoomVisitCount(roomName) {
     return this.roomHistory.filter(name => name === roomName).length;
   }
+
+  /**
+   * Generate a hash for a room based on its title
+   * This allows identical rooms to share the same hash
+   * 
+   * @param {Object} room - Room object with title
+   * @returns {string} - Hash value in base36
+   */
+  generateRoomId(room) {
+    // Only use title for the hash
+    const content = `${room.title}`;
+    return this.hashString(content);
+  }
+
+  /**
+   * Simple string hashing function
+   * 
+   * @param {string} str - String to hash
+   * @returns {string} - Hash value in base36
+   */
+  hashString(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return hash.toString(36);
+  }
 } 

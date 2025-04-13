@@ -9,6 +9,7 @@ export class Toolbar {
     this.communicationPanel = null;
     this.macroWindow = null;
     this.directionPanel = null;
+    this.imageryPanel = null;
   }
 
   initialize() {
@@ -43,8 +44,23 @@ export class Toolbar {
 
       // Special handling for Direction button
       if (button.hasClass('direction-btn')) {
+        console.log('Direction button clicked');
+        console.log('Current direction panel reference:', this.directionPanel);
         if (this.directionPanel) {
+          console.log('Toggling direction panel...');
           this.directionPanel.toggle();
+          button.toggleClass('disabled');
+          console.log('Direction panel visibility:', this.directionPanel.visible);
+        } else {
+          console.log('No direction panel reference found!');
+        }
+        return;
+      }
+
+      // Special handling for Imagery button
+      if (button.hasClass('imagery-btn')) {
+        if (this.imageryPanel) {
+          this.imageryPanel.toggle();
           button.toggleClass('disabled');
         }
         return;
@@ -101,6 +117,13 @@ export class Toolbar {
       </button>
     `);
 
+    // Add Imagery Panel button
+    j('#tmp-toolbar').append(`
+      <button class="btn kbutton imagery-btn" title="Toggle Imagery Panel">
+        Imagery
+      </button>
+    `);
+
     return this;
   }
 
@@ -119,6 +142,10 @@ export class Toolbar {
 
   setDirectionPanel(panel) {
     this.directionPanel = panel;
+  }
+
+  setImageryPanel(panel) {
+    this.imageryPanel = panel;
   }
 }
 
