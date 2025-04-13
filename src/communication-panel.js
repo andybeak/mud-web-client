@@ -95,7 +95,9 @@ export class CommunicationPanel {
       'border': '1px solid #444'
     });
 
-    j(this.id).get(0).win = this.win;
+    // Store reference to this panel in the window object
+    j(this.id).get(0).win = this;
+    j(this.id).get(0).panel = this;
   }
 
   initLayout() {
@@ -257,42 +259,29 @@ export class CommunicationPanel {
   }
 
   show() {
-    this.visible = true;
-    const windowElement = j(this.id);
-    
-    windowElement.css({
-        'display': 'block',
-        'visibility': 'visible',
-        'opacity': '1',
-        'z-index': '200 !important',
-        'position': 'fixed',
-        'width': this.mobile ? '100vw' : '600px',
-        'height': this.mobile ? '50vh' : '400px',
-        'min-height': this.mobile ? '200px' : '400px',
-        'max-height': this.mobile ? '50vh' : '400px',
-        'bottom': this.mobile ? '70px' : 'auto',
-        'left': this.mobile ? '0' : 'auto',
-        'right': this.mobile ? 'auto' : '100px',
-        'top': this.mobile ? 'auto' : '100px',
-        'overflow': 'hidden auto',
-        'background-color': '#1a1a1a',
-        'border-radius': '8px',
-        'border': '1px solid #444'
-    });
-    
-    windowElement.height();
-    this.win.bringToFront();
+    if (!this.visible) {
+      this.visible = true;
+      j(this.id).css({
+        display: 'block',
+        visibility: 'visible',
+        opacity: '1'
+      });
+      Event.fire('window_show', this.id);
+    }
+    return this;
   }
 
   hide() {
-    this.visible = false;
-    const windowElement = j(this.id);
-    
-    windowElement.css({
-        'display': 'none',
-        'visibility': 'hidden',
-        'opacity': '0'
-    });
+    if (this.visible) {
+      this.visible = false;
+      j(this.id).css({
+        display: 'none',
+        visibility: 'hidden',
+        opacity: '0'
+      });
+      Event.fire('window_hide', this.id);
+    }
+    return this;
   }
 
   toggle() {
@@ -301,5 +290,6 @@ export class CommunicationPanel {
     } else {
       this.show();
     }
+    return this;
   }
 } 

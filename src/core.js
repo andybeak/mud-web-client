@@ -127,28 +127,6 @@ export function initializeCore() {
         snap: false,
       });
 
-      // Initialize macro window if enabled
-      if (config.macroPanel) {
-        config.MacroWindow = new MacroWindow({
-          ...windowStyle,
-          css: {
-            ...windowStyle.css,
-            width: config.device.mobile ? '100vw' : windowStyle.css.width,
-            height: 'auto',
-            top: '10vh',
-            right: config.device.mobile ? 'auto' : '20px',
-            bottom: 'auto',
-            left: config.device.mobile ? 0 : 'auto',
-            'max-height': '80vh',
-            'overflow-y': 'auto',
-            'position': 'fixed'
-          },
-          macros: defaultMacros,
-          drag: !config.device.mobile,
-          snap: true
-        });
-      }
-
       if (!config.embed && !config.device.mobile && !config.kong) {
         config.Toolbar = new Toolbar();
         config.Toolbar.initialize();

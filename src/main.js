@@ -3,6 +3,8 @@ import { Event } from './event.js';
 import { ScrollView } from './scroll-view.js';
 import { DirectionPanel } from './direction-panel.js';
 import { CommunicationPanel } from './communication-panel.js';
+import { MacroWindow } from './macro-window.js';
+import { defaultMacros, windowStyle } from './config/macros.js';
 import jQuery from 'jquery';
 import { log } from './utils.js';
 import { initializeCore } from './core.js';
@@ -86,6 +88,11 @@ jQuery(async () => {
 
   await communicationPanel.initialize();
 
+  // Connect CommunicationPanel to Toolbar if in desktop mode
+  if (!config.embed && !config.device.mobile && !config.kong && config.Toolbar) {
+    config.Toolbar.setCommunicationPanel(communicationPanel);
+  }
+
   // Position direction panel at bottom
   if (config.macroPanel) {
     const directionPanel = new DirectionPanel({
@@ -104,6 +111,40 @@ jQuery(async () => {
     });
 
     await directionPanel.initialize();
+  }
+
+  // Initialize macro window if enabled
+  if (config.macroPanel) {
+    // Create the MacroWindow instance
+    const macroWindow = new MacroWindow({
+      ...windowStyle,
+      css: {
+        ...windowStyle.css,
+        width: config.device.mobile ? '100vw' : windowStyle.css.width,
+        height: 'auto',
+        top: '10vh',
+        right: config.device.mobile ? 'auto' : '20px',
+        bottom: 'auto',
+        left: config.device.mobile ? 0 : 'auto',
+        'max-height': '80vh',
+        'overflow-y': 'auto',
+        'position': 'fixed'
+      },
+      macros: defaultMacros,
+      drag: !config.device.mobile,
+      snap: true
+    });
+
+    // Initialize the MacroWindow
+    macroWindow.initialize();
+
+    // Store in config for both mobile and desktop
+    config.MacroWindow = macroWindow;
+
+    // Connect to Toolbar if in desktop mode
+    if (!config.embed && !config.device.mobile && !config.kong && config.Toolbar) {
+      config.Toolbar.setMacroWindow(macroWindow);
+    }
   }
 
   // Initialize tab bar

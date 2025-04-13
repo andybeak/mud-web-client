@@ -1,10 +1,14 @@
 import jQuery from 'jquery';
 import { Event } from './event.js';
+import { config } from './config.js';
 
 const j = jQuery;
 
 export class Toolbar {
-  constructor() {}
+  constructor() {
+    this.communicationPanel = null;
+    this.macroWindow = null;
+  }
 
   initialize() {
     // Check if toolbar already exists
@@ -16,6 +20,26 @@ export class Toolbar {
       e.stopPropagation();
 
       const target = j(e.target).attr('href');
+      const button = j(e.target);
+      
+      // Special handling for Communication button
+      if (button.hasClass('communication-btn')) {
+        if (this.communicationPanel) {
+          this.communicationPanel.toggle();
+          button.toggleClass('disabled');
+        }
+        return;
+      }
+
+      // Special handling for Macro button
+      if (button.hasClass('macro-btn')) {
+        if (this.macroWindow) {
+          this.macroWindow.toggle();
+          button.toggleClass('disabled');
+        }
+        return;
+      }
+
       // Check if window still exists
       if (!j(target).length) {
         // Window was closed, remove button
@@ -24,8 +48,6 @@ export class Toolbar {
       }
 
       const win = j(target).get(0).win;
-      const button = j(e.target);
-
       if (button.hasClass('disabled')) {
         win.show();
         button.removeClass('disabled');
@@ -48,10 +70,25 @@ export class Toolbar {
   update() {
     j('#tmp-toolbar').empty();
 
+    // Add Macro button first
+    j('#tmp-toolbar').append(`
+      <button class="btn kbutton macro-btn" title="Toggle Macro Panel">
+        Macro
+      </button>
+    `);
+
+    // Add Communication button
+    j('#tmp-toolbar').append(`
+      <button class="btn kbutton communication-btn" title="Toggle Communication Panel">
+        Communication
+      </button>
+    `);
+
+    // Add other window buttons
     j('.window').each(function () {
       const $window = j(this);
       const id = $window.attr('id');
-      const title = $window.get(0).win.setTitle() || id;
+      const title = $window.get(0).win?.title || id;
 
       const button = `
         <button href="#${id}" class="btn kbutton">
@@ -72,6 +109,14 @@ export class Toolbar {
   front(windowSelector) {
     j('#tmp-toolbar button').removeClass('active');
     j(`#tmp-toolbar button[href="${windowSelector}"]`).addClass('active');
+  }
+
+  setCommunicationPanel(panel) {
+    this.communicationPanel = panel;
+  }
+
+  setMacroWindow(window) {
+    this.macroWindow = window;
   }
 }
 
