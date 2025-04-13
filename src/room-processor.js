@@ -1,3 +1,22 @@
+/**
+ * RoomProcessor Class
+ * 
+ * Purpose:
+ * This class processes MUD (Multi-User Dungeon) text output to extract and track room information.
+ * It identifies rooms, their descriptions, items, monsters, and exits from the raw MUD text.
+ * 
+ * Key Features:
+ * - Detects room titles, descriptions, items, monsters, and exits using ANSI color codes
+ * - Maintains a history of visited rooms
+ * - Tracks room visit counts
+ * - Handles wrapped text in room descriptions
+ * - Generates unique IDs for rooms based on their content
+ * 
+ * Usage:
+ * The processor hooks into the MUD's text processing pipeline via the 'before_html' event.
+ * It processes each line of text, identifies room components, and maintains room state.
+ */
+
 import { Event } from './event.js';
 import { log } from './utils.js';
 
@@ -18,10 +37,6 @@ export class RoomProcessor {
     
     // Hook into the text processing pipeline
     Event.listen('before_html', (text) => {
-      // Log raw text with ANSI codes for debugging
-      console.log('=== RAW MUD TEXT WITH ANSI CODES ===');
-      console.log(this.formatAnsiText(text));
-      console.log('===================================');
       return this.process(text);
     });
   }
@@ -33,6 +48,23 @@ export class RoomProcessor {
     });
   }
 
+  /**
+   * Process raw MUD text to extract room information
+   * 
+   * The method:
+   * 1. Splits input text into lines
+   * 2. Identifies room components using ANSI color codes:
+   *    - Cyan (1;36m): Room titles
+   *    - Blue (1;34m): Room descriptions
+   *    - Green (1;32m): Room items
+   *    - Magenta (1;35m): Monsters
+   *    - Yellow/Red: Exits
+   * 3. Maintains buffers for each component
+   * 4. Handles text wrapping in descriptions
+   * 
+   * @param {string} text - Raw MUD text with ANSI codes
+   * @returns {string} - Processed text with room data extracted
+   */
   process(text) {
     const lines = text.split('\n');
     let processedText = '';
@@ -42,14 +74,13 @@ export class RoomProcessor {
       
       // If we're not in a room and this looks like a room title
       if (!this.currentRoom && this.isRoomLine(line)) {
-        console.log('=== Found new room ===');
-        console.log('Title:', this.cleanText(line));
         this.currentRoom = {
           title: this.cleanText(line),
           description: '',
           items: [],
           monsters: [],
-          exits: []
+          exits: [],
+          lastVisited: Date.now()
         };
         this.descriptionBuffer = [];
         this.itemsBuffer = [];
@@ -132,7 +163,6 @@ export class RoomProcessor {
 
         // Check if we've reached the end of the room data (stats line)
         if (formattedLine.includes('Hp:') && formattedLine.includes('Sp:') && formattedLine.includes('Ep:')) {
-          console.log('=== Found end of room description ===');
           // Join all buffered description lines with spaces
           this.currentRoom.description = this.descriptionBuffer.join(' ');
           this.processCompleteRoom(this.currentRoom);
@@ -167,6 +197,15 @@ export class RoomProcessor {
            !formattedLine.startsWith('[ANSI:37;40;0m][ANSI:1;36m] ');
   }
 
+  /**
+   * Finalize processing of a complete room
+   * 
+   * This method:
+   * 1. Joins all collected room components
+   * 2. Generates a unique ID for the room
+   * 3. Updates room history and visit counts
+   * 4. Clears all buffers for the next room
+   */
   processCompleteRoom(room) {
     // Clean up the description one final time
     room.description = room.description.trim();
@@ -179,10 +218,6 @@ export class RoomProcessor {
     // Add timestamp
     const timestamp = Date.now();
     room.lastVisited = timestamp;
-    
-    console.log('=== Processing complete room ===');
-    console.log('Room data:', JSON.stringify(room, null, 2));
-    console.log('===================================');
     
     if (room.title) {
       // If room already exists in history, remove it to update its position
@@ -211,6 +246,12 @@ export class RoomProcessor {
     }
   }
 
+  /**
+   * Clean text by removing ANSI codes
+   * 
+   * @param {string} text - Text with ANSI codes
+   * @returns {string} - Clean text without ANSI codes
+   */
   cleanText(text) {
     // Remove ANSI escape sequences
     text = text.replace(/\x1B\[[0-?]*[ -/]*[@-~]/g, '');
