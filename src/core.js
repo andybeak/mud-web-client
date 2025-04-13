@@ -6,6 +6,10 @@ import { Event } from './event.js';
 import { ScrollView } from './scroll-view.js';
 import { Toolbar } from './toolbar.js';
 import { MacroWindow } from './macro-window.js';
+import { defaultMacros, windowStyle } from './config/macros.js';
+import { Window } from './window.js';
+import { log } from './utils.js';
+import { buttonStyle } from './config/macros.js';
 
 const j = jQuery;
 
@@ -126,29 +130,20 @@ export function initializeCore() {
       // Initialize macro window if enabled
       if (config.macroPanel) {
         config.MacroWindow = new MacroWindow({
-          title: 'Macro Buttons',
+          ...windowStyle,
           css: {
-            width: config.device.mobile ? '100vw' : '300px',
+            ...windowStyle.css,
+            width: config.device.mobile ? '100vw' : windowStyle.css.width,
             height: 'auto',
-            top: config.device.mobile ? 'auto' : 100,
-            right: config.device.mobile ? 'auto' : 100,
-            bottom: config.device.mobile ? 38 : 'auto',
+            top: '10vh',
+            right: config.device.mobile ? 'auto' : '20px',
+            bottom: 'auto',
             left: config.device.mobile ? 0 : 'auto',
-            zIndex: 104,
-            'max-height': '50vh',
+            'max-height': '80vh',
             'overflow-y': 'auto',
             'position': 'fixed'
           },
-          macros: [
-            { name: 'Look', command: 'look' },
-            { name: 'Score', command: 'score' },
-            { name: 'Inventory', command: 'inventory' },
-            { name: 'Equipment', command: 'equipment' },
-            { name: 'Who', command: 'who' },
-            { name: 'Time', command: 'time' },
-            { name: 'Weather', command: 'weather' },
-            { name: 'Help', command: 'help' }
-          ],
+          macros: defaultMacros,
           drag: !config.device.mobile,
           snap: true
         });

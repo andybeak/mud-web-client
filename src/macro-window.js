@@ -96,6 +96,7 @@ export class MacroWindow {
           min-height: 100px !important;
           overflow: visible !important;
           display: block !important;
+          background-color: #f0f0f0 !important; /* Pale gray background */
         }
         .macro-grid {
           display: grid;
@@ -109,8 +110,8 @@ export class MacroWindow {
         .macro-btn {
           padding: 8px;
           border-radius: 4px;
-          border: 1px solid #888;
-          background: #444;
+          border: 1px solid #d4844a; /* Subdued orange border */
+          background: #e6955b; /* Subdued orange background */
           color: #fff;
           cursor: pointer;
           transition: all 0.2s;
@@ -120,11 +121,11 @@ export class MacroWindow {
           min-width: 0;
         }
         .macro-btn:hover {
-          background: #555;
+          background: #d4844a; /* Slightly darker on hover */
           transform: scale(1.05);
         }
         .macro-btn:active {
-          background: #666;
+          background: #c27339; /* Even darker when clicked */
           transform: scale(0.95);
         }
       </style>

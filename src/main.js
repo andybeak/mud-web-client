@@ -6,7 +6,6 @@ import { CommunicationPanel } from './communication-panel.js';
 import jQuery from 'jquery';
 import { log } from './utils.js';
 import { initializeCore } from './core.js';
-import { MacroWindow } from './macro-window.js'; // Add MacroWindow import
 
 import './mxp.js'; // Import MXP module
 import './modal-input.js'; // ModalInput module
@@ -24,21 +23,6 @@ import { Facebook } from './fb.js';
 const j = jQuery;
 
 window.jQuery = window.$ = jQuery;
-
-// Default macros configuration
-const defaultMacros = [
-  { name: 'Look', command: 'look' },
-  { name: 'Score', command: 'score' },
-  { name: 'Inventory', command: 'inventory' },
-  { name: 'Equipment', command: 'equipment' },
-  { name: 'Who', command: 'who' },
-  { name: 'Time', command: 'time' },
-  { name: 'Weather', command: 'weather' },
-  { name: 'Help', command: 'help' }
-];
-
-// Global macro window instance
-let macroWindow = null;
 
 // Wait for DOM to be ready
 jQuery(async () => {
@@ -63,12 +47,10 @@ jQuery(async () => {
     // Handle tab actions
     switch(tab) {
       case 'macro':
-        if (!macroWindow) {
-          macroWindow = new MacroWindow({
-            macros: defaultMacros
-          });
+        // Toggle the macro window through config
+        if (config.MacroWindow) {
+          config.MacroWindow.toggle();
         }
-        macroWindow.toggle();
         break;
       case 'map':
         // Handle map tab
