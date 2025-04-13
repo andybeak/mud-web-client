@@ -30,12 +30,18 @@ export class Modal {
   init() {
     const o = this.options;
 
-    if (o.close && o.close === 1) {
-      const existingModal = document.querySelector('.modal');
-      if (existingModal) {
-        const modal = BootstrapModal.getInstance(existingModal);
-        if (modal) modal.hide();
+    // Clean up any existing modals
+    const existingModals = document.querySelectorAll('.modal');
+    existingModals.forEach(modal => {
+      const instance = BootstrapModal.getInstance(modal);
+      if (instance) {
+        instance.hide();
+        instance.dispose();
       }
+      modal.remove();
+    });
+
+    if (o.close && o.close === 1) {
       return;
     }
 
@@ -108,6 +114,16 @@ export class Modal {
 
     this.modalInstance = new BootstrapModal(j('.modal').get(0));
     console.log('Created modal instance:', this.modalInstance);
+
+    // Add event listener for when modal is hidden
+    j('.modal').on('hidden.bs.modal', () => {
+      console.log('Modal hidden, cleaning up');
+      if (this.modalInstance) {
+        this.modalInstance.dispose();
+        this.modalInstance = null;
+      }
+      j('.modal').remove();
+    });
 
     // Add click handlers for custom buttons using event delegation
     if (o.buttons) {

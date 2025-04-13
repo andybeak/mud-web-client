@@ -99,6 +99,10 @@ export class MacroWindow {
 
   initLayout() {
     const content = j(`${this.id} .content`);
+    
+    // Clear existing content
+    content.empty();
+    
     content.css({
       'height': 'auto',
       'min-height': '100px',
