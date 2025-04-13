@@ -41,25 +41,17 @@ const defaultMacros = [
 let macroWindow = null;
 
 // Wait for DOM to be ready
-j(document).ready(async () => {
-  console.log('DOM Content Loaded');
-
+jQuery(async () => {
   // Initialize config first
   await config.initialize();
-
-  // Debug screen dimensions and mobile detection
-  console.log('Device Info:', {
-    isMobile: config.device.mobile,
-    isTouch: config.device.touch,
-    deviceConfig: config.device
-  });
 
   // Initialize core
   initializeCore();
 
-  // Add tab click handlers
-  j('.tab-btn').click((e) => {
+  // Add tab click handlers using event delegation
+  j('body').on('click', '.tab-btn', (e) => {
     const tab = j(e.target).data('tab');
+    
     console.log('Tab clicked:', tab);
     
     // Remove active class from all buttons
@@ -71,14 +63,12 @@ j(document).ready(async () => {
     // Handle tab actions
     switch(tab) {
       case 'macro':
-        console.log('Macro tab clicked, macroWindow:', config.MacroWindow);
-        if (config.MacroWindow) {
-          console.log('Before toggle - visible:', config.MacroWindow.visible);
-          config.MacroWindow.toggle();
-          console.log('After toggle - visible:', config.MacroWindow.visible);
-        } else {
-          console.error('Macro window not initialized');
+        if (!macroWindow) {
+          macroWindow = new MacroWindow({
+            macros: defaultMacros
+          });
         }
+        macroWindow.toggle();
         break;
       case 'map':
         // Handle map tab

@@ -10,7 +10,6 @@ export class MacroWindow {
     // Clean up any existing windows and their event listeners
     const existingWindows = j('#macro-window');
     if (existingWindows.length) {
-      console.log('MacroWindow: Cleaning up existing windows:', existingWindows.length);
       existingWindows.remove();
       // Also clean up any associated event listeners
       j(document).off('click', '.macro-btn');
@@ -36,16 +35,13 @@ export class MacroWindow {
   }
 
   initialize() {
-    console.log('MacroWindow: Starting initialization');
     this.initWindow();
     this.initLayout();
     this.initEventListeners();
-    console.log('MacroWindow: Initialization complete');
     this.hide(); // Ensure window starts hidden
   }
 
   initWindow() {
-    console.log('MacroWindow: Initializing window');
     this.win = new Window({
       id: this.id,
       title: this.options.title,
@@ -59,15 +55,13 @@ export class MacroWindow {
         'display': 'block',
         'visibility': 'visible',
         'opacity': '1',
-        'z-index': '9999 !important'
+        'z-index': '200 !important',
+        'height': 'auto',
+        'min-height': '100px'
       },
       drag: !config.device.touch,
       snap: true
     });
-
-    console.log('MacroWindow: Window created:', this.win);
-    console.log('MacroWindow: Window element:', j(this.id));
-    console.log('MacroWindow: Window in DOM:', document.querySelector(this.id));
     
     j(this.id).get(0).win = this.win;
   }
@@ -76,8 +70,9 @@ export class MacroWindow {
     const content = j(`${this.id} .content`);
     content.css({
       'height': 'auto',
-      'min-height': '0',
-      'padding': '5px'
+      'min-height': '100px',
+      'padding': '5px',
+      'display': 'block'
     });
 
     content.append(`
@@ -98,8 +93,9 @@ export class MacroWindow {
         #macro-window .content {
           padding: 5px !important;
           height: auto !important;
-          min-height: 0 !important;
+          min-height: 100px !important;
           overflow: visible !important;
+          display: block !important;
         }
         .macro-grid {
           display: grid;
@@ -108,6 +104,7 @@ export class MacroWindow {
           padding: 5px;
           width: 100%;
           box-sizing: border-box;
+          min-height: 100px;
         }
         .macro-btn {
           padding: 8px;
@@ -144,41 +141,44 @@ export class MacroWindow {
   }
 
   show() {
-    console.log('MacroWindow: Showing window');
     this.visible = true;
     const windowElement = j(this.id);
     
+    // Set all visibility properties at once
     windowElement.css({
-      'display': 'block',
-      'visibility': 'visible',
-      'opacity': '1',
-      'z-index': '9999 !important',
-      'position': 'fixed',
-      'bottom': '38px',
-      'left': '0',
-      'width': '100vw',
-      'height': 'auto',
-      'max-height': '50vh'
+        'display': 'block',
+        'visibility': 'visible',
+        'opacity': '1',
+        'z-index': '200 !important',
+        'position': 'fixed',
+        'bottom': '38px',
+        'left': '0',
+        'width': '100vw',
+        'height': 'auto',
+        'min-height': '100px',
+        'max-height': '50vh',
+        'overflow': 'hidden auto'  // Add this to maintain scrolling
     });
     
-    windowElement.show();
-    
+    // Force a reflow to ensure proper sizing
     windowElement.height();
-    
-    console.log('MacroWindow: Window element:', windowElement);
-    console.log('MacroWindow: Window visibility:', windowElement.is(':visible'));
-    console.log('MacroWindow: Window in DOM:', document.querySelector(this.id));
     this.win.bringToFront();
   }
 
   hide() {
-    console.log('MacroWindow: Hiding window');
     this.visible = false;
-    j(this.id).hide();
+    const windowElement = j(this.id);
+    
+    // Set all visibility properties at once
+    windowElement.css({
+        'display': 'none',
+        'visibility': 'hidden',
+        'opacity': '0'
+    });
   }
 
   toggle() {
-    console.log('MacroWindow: Toggling window, current state:', this.visible);
+    console.log('MacroWindow: Toggling visibility');
     if (this.visible) {
       this.hide();
     } else {
