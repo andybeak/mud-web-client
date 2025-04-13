@@ -208,11 +208,13 @@ h1, h3, a:hover, blockquote, .menu-dropdown li.active .level1, .menu-dropdown li
     color: #ccc;
 }
 .btn.active, .btn:active {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) inset, 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+    background-color: #5c5c5c;
+    color: #8a8c8c;
 }
 .btn:hover, .btn:focus, .btn:active, .btn.active, .btn.disabled, .btn[disabled] {
-    background-color: #4d4d4d;
-    color: #fff;
+    background-color: #5c5c5c;
+    color: #8a8c8c;
 }
 .btn.active, .btn:active {
     background-image: none;

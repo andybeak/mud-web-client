@@ -133,6 +133,10 @@ export class Window {
           if (this.options.onClose) {
             this.options.onClose();
           }
+          // Update toolbar button state before closing
+          if (config.Toolbar) {
+            j(`#tmp-toolbar button[href="${this.id}"]`).remove();
+          }
           Event.fire('window_close', this.id);
           j(`${this.id} .nice`).getNiceScroll().remove();
           j(this.id).remove();
@@ -708,6 +712,10 @@ export class Window {
   hide() {
     j(this.id).hide();
     Event.fire('window_hide', this.id);
+    // Update toolbar button state
+    if (config.Toolbar) {
+      j(`#tmp-toolbar button[href="${this.id}"]`).removeClass('active').addClass('disabled');
+    }
     this.savePosition();
     return this;
   }

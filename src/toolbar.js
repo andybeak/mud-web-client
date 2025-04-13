@@ -26,16 +26,12 @@ export class Toolbar {
       const win = j(target).get(0).win;
       const button = j(e.target);
 
-      if (button.hasClass('active')) {
-        win.hide();
-        button.removeClass('active').addClass('disabled');
-      } else if (button.hasClass('disabled')) {
+      if (button.hasClass('disabled')) {
         win.show();
-        button.removeClass('disabled').addClass('active');
+        button.removeClass('disabled');
       } else {
-        win.bringToFront();
-        j('#tmp-toolbar button').removeClass('active');
-        button.addClass('active');
+        win.hide();
+        button.addClass('disabled');
       }
     });
 
