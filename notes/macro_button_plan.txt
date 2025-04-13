@@ -1,0 +1,41 @@
+Based on my analysis of the codebase, here's a plan to implement the macro button window:
+Create a New MacroWindow Class
+Create a new file src/macro-window.js
+Extend the existing window system functionality
+The window will be draggable and resizable
+It will have a close button
+It will be positioned above the main MUD window
+Window Structure
+Title bar with "Macro Buttons" title
+Content area with a grid of buttons
+Each button will have:
+A label (the macro name)
+A tooltip (showing the command it will send)
+A click handler to send the command
+Macro Configuration
+Create a configuration object to store macro definitions
+Each macro will have:
+A name (displayed on button)
+A command (text to send to MUD)
+Optional: icon, color, or other styling
+Integration with Socket System
+Use the existing Socket class to send commands
+Access the socket through config.Socket
+Send commands using config.Socket.send()
+Implementation Steps:
+Apply
+Integration with Main Application
+Add the macro window initialization to main.js
+Create a default set of macros
+Add a way to toggle the window visibility
+Styling
+Add CSS for the macro grid layout
+Style the buttons to be visually appealing
+Add hover effects and active states
+Make it responsive for mobile devices
+Additional Features to Consider
+Ability to edit macros
+Save macros to user preferences
+Keyboard shortcuts for macros
+Categorize macros into groups
+Import/export macro configurations

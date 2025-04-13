@@ -6,6 +6,7 @@ import { CommunicationPanel } from './communication-panel.js';
 import jQuery from 'jquery';
 import { log } from './utils.js';
 import { initializeCore } from './core.js';
+import { MacroWindow } from './macro-window.js'; // Add MacroWindow import
 
 import './mxp.js'; // Import MXP module
 import './modal-input.js'; // ModalInput module
@@ -24,6 +25,21 @@ const j = jQuery;
 
 window.jQuery = window.$ = jQuery;
 
+// Default macros configuration
+const defaultMacros = [
+  { name: 'Look', command: 'look' },
+  { name: 'Score', command: 'score' },
+  { name: 'Inventory', command: 'inventory' },
+  { name: 'Equipment', command: 'equipment' },
+  { name: 'Who', command: 'who' },
+  { name: 'Time', command: 'time' },
+  { name: 'Weather', command: 'weather' },
+  { name: 'Help', command: 'help' }
+];
+
+// Global macro window instance
+let macroWindow = null;
+
 // Wait for DOM to be ready
 j(document).ready(async () => {
   console.log('DOM Content Loaded');
@@ -40,6 +56,38 @@ j(document).ready(async () => {
 
   // Initialize core
   initializeCore();
+
+  // Add tab click handlers
+  j('.tab-btn').click((e) => {
+    const tab = j(e.target).data('tab');
+    console.log('Tab clicked:', tab);
+    
+    // Remove active class from all buttons
+    j('.tab-btn').removeClass('active');
+    
+    // Add active class to clicked button
+    j(e.target).addClass('active');
+    
+    // Handle tab actions
+    switch(tab) {
+      case 'macro':
+        console.log('Macro tab clicked, macroWindow:', config.MacroWindow);
+        if (config.MacroWindow) {
+          console.log('Before toggle - visible:', config.MacroWindow.visible);
+          config.MacroWindow.toggle();
+          console.log('After toggle - visible:', config.MacroWindow.visible);
+        } else {
+          console.error('Macro window not initialized');
+        }
+        break;
+      case 'map':
+        // Handle map tab
+        break;
+      case 'settings':
+        // Handle settings tab
+        break;
+    }
+  });
 
   // Mobile-only layout
   // Hide communication panel
@@ -81,9 +129,9 @@ j(document).ready(async () => {
         z-index: 1000;
         border-top: 1px solid #666;
       ">
-        <button class="tab-btn active">Chat</button>
-        <button class="tab-btn">Map</button>
-        <button class="tab-btn">Settings</button>
+        <button class="tab-btn" data-tab="macro">Macro</button>
+        <button class="tab-btn" data-tab="map">Map</button>
+        <button class="tab-btn" data-tab="settings">Settings</button>
       </div>
     `);
 

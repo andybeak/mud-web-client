@@ -5,6 +5,7 @@ import { Event } from './event.js';
 // import { ControlPanel } from './control-panel.js';
 import { ScrollView } from './scroll-view.js';
 import { Toolbar } from './toolbar.js';
+import { MacroWindow } from './macro-window.js';
 
 const j = jQuery;
 
@@ -74,7 +75,7 @@ export function initializeCore() {
         console.log('Mobile mode detected in core.js');
         
         config.width = '100vw';
-        config.height = 'calc(100vh - 100px - 30px - 8px)'; // Increased from 70vh to 85vh
+        config.height = 'calc(100vh - 100px - 30px - 8px)';
         config.top = 0;
         config.left = 0;
 
@@ -105,10 +106,9 @@ export function initializeCore() {
             }
           </style>
         `);
-      } else {
-        console.log('Not in mobile mode in core.js');
       }
 
+      // Initialize scroll view
       new ScrollView({
         local: true,
         css: {
@@ -119,9 +119,40 @@ export function initializeCore() {
           zIndex: 103,
         },
         scrollback: 40 * 1000,
-        drag: false, // Always disable dragging
-        snap: false, // Always disable snapping
+        drag: false,
+        snap: false,
       });
+
+      // Initialize macro window if enabled
+      if (config.macroPanel) {
+        config.MacroWindow = new MacroWindow({
+          title: 'Macro Buttons',
+          css: {
+            width: config.device.mobile ? '100vw' : '300px',
+            height: 'auto',
+            top: config.device.mobile ? 'auto' : 100,
+            right: config.device.mobile ? 'auto' : 100,
+            bottom: config.device.mobile ? 38 : 'auto',
+            left: config.device.mobile ? 0 : 'auto',
+            zIndex: 104,
+            'max-height': '50vh',
+            'overflow-y': 'auto',
+            'position': 'fixed'
+          },
+          macros: [
+            { name: 'Look', command: 'look' },
+            { name: 'Score', command: 'score' },
+            { name: 'Inventory', command: 'inventory' },
+            { name: 'Equipment', command: 'equipment' },
+            { name: 'Who', command: 'who' },
+            { name: 'Time', command: 'time' },
+            { name: 'Weather', command: 'weather' },
+            { name: 'Help', command: 'help' }
+          ],
+          drag: !config.device.mobile,
+          snap: true
+        });
+      }
 
       if (!config.embed && !config.device.mobile && !config.kong) {
         config.Toolbar = new Toolbar();
