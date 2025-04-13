@@ -325,6 +325,18 @@ export class ScrollView {
     this.setupInputHandlers();
     this.setupColorization();
     this.setupLogging();
+
+    // Add click handler to hide imagery panel
+    j(this.id).click((e) => {
+      // Don't hide if clicking on input or buttons
+      if (j(e.target).is('.send') || j(e.target).closest('.toolbar').length) {
+        return;
+      }
+      
+      if (config.ImageryPanel) {
+        config.ImageryPanel.hide();
+      }
+    });
   }
 
   setupInputHandlers() {
