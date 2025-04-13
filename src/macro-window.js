@@ -146,6 +146,8 @@ export class MacroWindow {
           overflow: visible !important;
           display: block !important;
           background-color: #f0f0f0 !important;
+          border-radius: 8px !important;
+          margin: 0 !important;
         }
         .macro-grid {
           display: grid;
@@ -349,7 +351,8 @@ export class MacroWindow {
         'height': 'auto',
         'min-height': '100px',
         'max-height': '50vh',
-        'overflow': 'hidden auto'  // Add this to maintain scrolling
+        'overflow': 'hidden auto',  // Add this to maintain scrolling
+        'background-color': 'transparent'  // Make the window background transparent
     });
     
     // Force a reflow to ensure proper sizing
