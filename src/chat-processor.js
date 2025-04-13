@@ -15,12 +15,8 @@ export class ChatProcessor {
     const lines = text.split('\n');
     let processedText = '';
     
-    console.log('ChatProcessor received text:', text);
-    
     for (const line of lines) {
-      console.log('Processing line:', line);
       if (this.isChatLine(line)) {
-        console.log('Line matched chat pattern');
         // If we have a partial message, process it
         if (this.partialMessage) {
           this.processCompleteMessage(this.partialMessage);
@@ -33,13 +29,11 @@ export class ChatProcessor {
       } else if (this.partialMessage) {
         // Check if this is a continuation of the current message
         if (this.isMessageContinuation(line)) {
-          console.log('Line is message continuation');
           this.partialMessage += '\n' + line;
           this.lastMessageTime = Date.now();
           processedText += line + '\n';
         } else {
           // Process the complete message
-          console.log('Processing complete message due to non-continuation');
           this.processCompleteMessage(this.partialMessage);
           this.partialMessage = null;
           processedText += line + '\n';
@@ -51,7 +45,6 @@ export class ChatProcessor {
     
     // Process any remaining partial message
     if (this.partialMessage) {
-      console.log('Processing final partial message');
       this.processCompleteMessage(this.partialMessage);
       this.partialMessage = null;
     }
@@ -63,9 +56,7 @@ export class ChatProcessor {
     // Convert non-ASCII characters to a placeholder for pattern matching
     const asciiLine = line.replace(/[^\x00-\x7F]/g, '');
     const pattern = /^\[(\d+)\]\s*\[(\d{2}:\d{2}:\d{2})\]\s*(?:(\S+)\s+)?\[([^\]]+)\]:/;
-    const matches = asciiLine.match(pattern);
-    console.log('Checking if line is chat:', line, 'ASCII version:', asciiLine, 'Result:', matches);
-    return matches;
+    return asciiLine.match(pattern);
   }
 
   isMessageContinuation(line) {
@@ -89,8 +80,6 @@ export class ChatProcessor {
   }
 
   processCompleteMessage(message) {
-    console.log('Processing complete message:', message);
-    
     // Split the message into lines and clean up carriage returns
     const lines = message.split('\n').map(line => line.replace(/\r/g, ''));
     const headerLine = lines[0];
@@ -101,7 +90,6 @@ export class ChatProcessor {
       const line = lines[i].trim();
       // If we hit a line with non-ASCII characters, that's the end of the chat message
       if (line.match(/[^\x00-\x7F]/)) {
-        console.log('Found end of chat message at line:', i);
         break;
       }
       contentLines.push(line);
@@ -116,8 +104,6 @@ export class ChatProcessor {
         .join('\n')
         .trim();
       
-      console.log('Extracted message components:', { timestamp, time, character, channel, content });
-      
       // Fire event with structured message data
       Event.fire('chat_message', {
         timestamp: parseInt(timestamp),
@@ -126,8 +112,6 @@ export class ChatProcessor {
         channel: channel.trim(),
         content: content
       });
-    } else {
-      console.log('Failed to match message pattern:', message);
     }
   }
 } 
