@@ -127,8 +127,8 @@ export class MacroWindow {
               ${macro.name}
             </button>
             ${macro.category === 'custom' ? `
-              <button class="delete-macro-btn" data-index="${index - defaultMacros.length}">
-                <i class="icon-trash"></i>
+              <button class="delete-macro-btn" data-index="${index - defaultMacros.length}" title="Delete macro">
+                ×
               </button>
             ` : ''}
           </div>
@@ -160,7 +160,7 @@ export class MacroWindow {
           position: relative;
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 2px;
         }
         .macro-btn {
           padding: 8px;
@@ -173,6 +173,7 @@ export class MacroWindow {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          max-width: 120px;
           min-width: 0;
           flex: 1;
         }
@@ -187,16 +188,28 @@ export class MacroWindow {
           transform: scale(0.95);
         }
         .delete-macro-btn {
-          padding: 4px;
+          padding: 8px;
           border: none;
-          background: transparent;
-          color: #ff4444;
+          background: #ff4444;
+          color: white;
           cursor: pointer;
-          opacity: 0.7;
-          transition: opacity 0.2s;
+          border-radius: 4px;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          font-weight: bold;
+          width: 32px;
+          height: 32px;
+          line-height: 1;
         }
         .delete-macro-btn:hover {
-          opacity: 1;
+          background: #ff0000;
+          transform: scale(1.1);
+        }
+        .delete-macro-btn:active {
+          transform: scale(0.95);
         }
         .add-macro-btn {
           width: 100%;
@@ -227,7 +240,37 @@ export class MacroWindow {
     // Handle delete button clicks
     j(`${this.id} .delete-macro-btn`).click((e) => {
       const index = parseInt(j(e.target).data('index'));
-      this.removeCustomMacro(index);
+      const macro = this.macros[index + defaultMacros.length];
+      
+      new Modal({
+        title: 'Delete Macro',
+        html: `
+          <div class="mb-3">
+            Are you sure you want to delete the macro "${macro.name}"?
+          </div>
+        `,
+        css: {
+          width: config.device.mobile ? '90vw' : '400px',
+          'max-width': '90vw'
+        },
+        buttons: [
+          {
+            text: 'Delete',
+            class: 'btn-danger',
+            click: (modalInstance) => {
+              this.removeCustomMacro(index);
+              modalInstance.hide();
+            }
+          },
+          {
+            text: 'Cancel',
+            class: 'btn-secondary',
+            click: (modalInstance) => {
+              modalInstance.hide();
+            }
+          }
+        ]
+      });
     });
 
     // Handle add macro button click
