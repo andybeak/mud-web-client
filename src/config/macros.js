@@ -3,17 +3,17 @@ export const STORAGE_KEY = 'mud-custom-macros';
 
 // Default macro configurations
 export const defaultMacros = [
+  { name: 'Config', command: 'set WIDTH 80;mentor on;retro on;chat on;think I have configured my settings to suit this web client', category: 'basic' },
   { name: 'Look', command: 'look', category: 'basic' },
   { name: 'Score', command: 'score', category: 'basic' },
   { name: 'Inventory', command: 'inventory', category: 'basic' },
   { name: 'Equipment', command: 'equipment', category: 'basic' },
   { name: 'Who', command: 'who', category: 'social' },
-  { name: 'Time', command: 'time', category: 'basic' },
-  { name: 'Weather', command: 'weather', category: 'basic' },
   { name: 'Help', command: 'help', category: 'basic' },
   { name: 'Map', command: 'map', category: 'movement' },
   { name: 'Attack', command: 'kill monster', category: 'combat' },
   { name: 'Flee', command: 'flee', category: 'combat' },
+  { name: 'Wimpy 10', command: 'wimpy 10', category: 'basic' },
   { name: 'Guide', command: 'guide', category: 'basic' },
   { name: 'Home', command: 'home', category: 'movement' }
 ];

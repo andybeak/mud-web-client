@@ -235,7 +235,11 @@ export class MacroWindow {
     j(`${this.id} .macro-btn`).click((e) => {
       const command = j(e.target).data('command');
       if (config.Socket) {
-        config.Socket.send(command + '\n');
+        // Split command by semicolons and send each part
+        const commands = command.split(';').map(cmd => cmd.trim()).filter(cmd => cmd);
+        commands.forEach(cmd => {
+          config.Socket.send(cmd + '\n');
+        });
       }
     });
 
