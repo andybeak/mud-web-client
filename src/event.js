@@ -10,6 +10,7 @@ export const Event = {
     chat_data: [],
     chat_before_close: [],
     chat_close: [],
+    chat_message: [],
     telnet_open: [],
     telnet_before_close: [],
     telnet_close: [],

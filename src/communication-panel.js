@@ -3,6 +3,7 @@ import { config } from './config.js';
 import { Event } from './event.js';
 import { Window } from './window.js';
 import { log } from './utils.js';
+import { ChatProcessor } from './chat-processor.js';
 
 const j = jQuery;
 
@@ -27,9 +28,17 @@ export class CommunicationPanel {
     this.touch = config.device.touch;
     this.pref = window.user.pref;
     this.messages = []; // Array to store messages
-    this.maxMessages = 50; // Increased maximum number of messages to store
+    this.maxMessages = 50; // Maximum number of messages to store
     this.visible = false; // Start hidden
     this.exposeToConfig();
+
+    // Initialize chat processor
+    this.chatProcessor = new ChatProcessor();
+    
+    // Listen for processed chat messages
+    Event.listen('chat_message', (message) => {
+      this.addChatMessage(message.character, message.channel, message.content);
+    });
   }
 
   async initialize() {
@@ -188,122 +197,43 @@ export class CommunicationPanel {
   }
 
   initEventListeners() {
-    // Listen for new text in the main window
-    Event.listen('scrollview_add', (text) => {
-      if (!text) return; // Skip if text is undefined or null
-      
-      // Remove HTML tags and decode entities
-      const cleanText = text.replace(/<[^>]*>/g, '')
-                           .replace(/&nbsp;/g, ' ')
-                           .replace(/&lt;/g, '<')
-                           .replace(/&gt;/g, '>');
-      
-      // Split the text into lines and process each line
-      const lines = cleanText.split('\n');
-      lines.forEach(line => {
-        if (!line.trim()) return; // Skip empty lines
-        
-        // First try to match the "chat last" format
-        const lastChatMatch = line.match(/\[(\d+)\]\s*\[(\d{2}:\d{2}:\d{2})\]\s*(?:(\S+)\s+)?\[([^\]]+)\]:\s*(.+)$/s);
-        if (lastChatMatch) {
-          const [, timestamp, time, character, channel, content] = lastChatMatch;
-          // Clean up the content by removing extra whitespace and line breaks
-          const cleanContent = content.replace(/\s+/g, ' ').trim();
-          this.addChatMessage(character?.trim() || 'System', channel.trim(), cleanContent);
-          return;
-        }
-        
-        // Then try to match the regular chat format
-        const chatMatch = line.match(/^([^[]+?)\s*\[([^\]]+)\]:\s*(.+)$/s);
-        if (chatMatch) {
-          const [, character, channel, content] = chatMatch;
-          // Clean up the content by removing extra whitespace and line breaks
-          const cleanContent = content.replace(/\s+/g, ' ').trim();
-          this.addChatMessage(character.trim(), channel.trim(), cleanContent);
-        }
-      });
-    });
-
-    // Backup method: Observe ScrollView content directly
-    if (config.ScrollView) {
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'childList') {
-            mutation.addedNodes.forEach((node) => {
-              if (node.nodeType === Node.ELEMENT_NODE) {
-                const text = node.textContent;
-                
-                // Split the text into lines and process each line
-                const lines = text.split('\n');
-                lines.forEach(line => {
-                  if (!line.trim()) return; // Skip empty lines
-                  
-                  // First try to match the "chat last" format
-                  const lastChatMatch = line.match(/\[(\d+)\]\s*\[(\d{2}:\d{2}:\d{2})\]\s*(?:(\S+)\s+)?\[([^\]]+)\]:\s*(.+)$/s);
-                  if (lastChatMatch) {
-                    const [, timestamp, time, character, channel, content] = lastChatMatch;
-                    // Clean up the content by removing extra whitespace and line breaks
-                    const cleanContent = content.replace(/\s+/g, ' ').trim();
-                    this.addChatMessage(character?.trim() || 'System', channel.trim(), cleanContent);
-                    return;
-                  }
-                  
-                  // Then try to match the regular chat format
-                  const chatMatch = line.match(/^([^[]+?)\s*\[([^\]]+)\]:\s*(.+)$/s);
-                  if (chatMatch) {
-                    const [, character, channel, content] = chatMatch;
-                    // Clean up the content by removing extra whitespace and line breaks
-                    const cleanContent = content.replace(/\s+/g, ' ').trim();
-                    this.addChatMessage(character.trim(), channel.trim(), cleanContent);
-                  }
-                });
-              }
-            });
-          }
-        });
-      });
-
-      const scrollView = j(`${config.ScrollView.id} .out`);
-      observer.observe(scrollView[0], { childList: true, subtree: true });
-    }
+    // Remove old chat detection logic
+    // The new ChatProcessor handles this through events
   }
 
   addChatMessage(character, channel, content) {
-    // Only process messages from retro or chat channels
-    if (channel !== 'retro' && channel !== 'chat') return;
+    console.log('CommunicationPanel received message:', { character, channel, content });
+    if (channel === 'retro' || channel === 'chat') {
+      console.log('Message channel accepted:', channel);
+      const isDuplicate = this.messages.some(msg => 
+        msg.character === character && 
+        msg.channel === channel && 
+        msg.content === content
+      );
 
-    // Check for duplicate messages
-    const isDuplicate = this.messages.some(msg => 
-      msg.character === character && 
-      msg.channel === channel && 
-      msg.content === content
-    );
+      if (isDuplicate) return;
 
-    // Skip if this is a duplicate message
-    if (isDuplicate) return;
+      this.messages.unshift({
+        character,
+        channel,
+        content,
+        timestamp: new Date()
+      });
 
-    // Add new message to the beginning of the array
-    this.messages.unshift({
-      character,
-      channel,
-      content,
-      timestamp: new Date()
-    });
+      if (this.messages.length > this.maxMessages) {
+        this.messages.pop();
+      }
 
-    // Remove oldest message if we exceed the limit
-    if (this.messages.length > this.maxMessages) {
-      this.messages.pop();
+      this.updateMessageDisplay();
+    } else {
+      console.log('Message channel rejected:', channel);
     }
-
-    // Update the display
-    this.updateMessageDisplay();
   }
 
   updateMessageDisplay() {
     const $messages = j(`${this.id} .chat-messages`);
     $messages.empty();
 
-    // Display messages in reverse chronological order (newest first)
     this.messages.forEach(msg => {
       const $message = j(`
         <div class="chat-message">
@@ -316,7 +246,6 @@ export class CommunicationPanel {
       $messages.append($message);
     });
 
-    // Scroll to the top (newest messages)
     $messages.scrollTop(0);
   }
 
@@ -331,7 +260,6 @@ export class CommunicationPanel {
     this.visible = true;
     const windowElement = j(this.id);
     
-    // Set all visibility properties at once
     windowElement.css({
         'display': 'block',
         'visibility': 'visible',
@@ -352,7 +280,6 @@ export class CommunicationPanel {
         'border': '1px solid #444'
     });
     
-    // Force a reflow to ensure proper sizing
     windowElement.height();
     this.win.bringToFront();
   }
@@ -361,7 +288,6 @@ export class CommunicationPanel {
     this.visible = false;
     const windowElement = j(this.id);
     
-    // Set all visibility properties at once
     windowElement.css({
         'display': 'none',
         'visibility': 'hidden',
