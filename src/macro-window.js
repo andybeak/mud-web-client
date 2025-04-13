@@ -165,8 +165,8 @@ export class MacroWindow {
         .macro-btn {
           padding: 8px;
           border-radius: 4px;
-          border: 1px solid #d4844a;
-          background: #e6955b;
+          border: 1px solid #666;
+          background: #888;
           color: #fff;
           cursor: pointer;
           transition: all 0.2s;
@@ -317,6 +317,18 @@ export class MacroWindow {
           }
         ]
       });
+    });
+
+    // Close macro window when clicking outside
+    j(document).on('click', (e) => {
+      // Don't close if clicking on tab buttons
+      if (j(e.target).closest('.tab-btn').length) {
+        return;
+      }
+      
+      if (!j(e.target).closest(this.id).length && this.visible) {
+        this.hide();
+      }
     });
   }
 
