@@ -25,6 +25,10 @@
   </head>
 
   <body id="page" class="page app">
+    <script type="module">
+      import { handleSignInWithGoogle } from './src/services/auth.js'
+      window.handleSignInWithGoogle = handleSignInWithGoogle
+    </script>
     <script type="module" src="/src/main.js"></script>
   </body>
 

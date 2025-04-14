@@ -10,6 +10,7 @@ import jQuery from 'jquery';
 import { log } from './utils.js';
 import { initializeCore } from './core.js';
 import { RoomProcessor } from './room-processor.js';
+import { SignIn } from './components/SignIn.js';
 
 import './mxp.js'; // Import MXP module
 import './modal-input.js'; // ModalInput module
@@ -30,6 +31,9 @@ window.jQuery = window.$ = jQuery;
 
 // Wait for DOM to be ready
 jQuery(async () => {
+  // Initialize sign-in first
+  new SignIn();
+
   // Initialize config first
   await config.initialize();
 
