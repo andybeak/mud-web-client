@@ -39,29 +39,32 @@ export class SignIn {
       <div class="sign-in-content">
         <h2>Sign In</h2>
         <div class="g_id_signin" data-nonce=""></div>
-        <button class="continue-without-login">Continue without login</button>
       </div>
     `
     console.log('Window content set')
 
     // Add click outside handler
     this.element.addEventListener('click', (e) => {
-      console.log('Window click detected:', e.target)
-      if (e.target === this.element) {
-        this.hide()
+      // This log helps see what was clicked
+      console.log('Window click detected:', e.target) 
+      
+      // Check if the click was directly on the background overlay (this.element)
+      // and not on the content inside it.
+      if (e.target === this.element) { 
+        this.hide() // Hide the window if the click was outside the content area
       }
-    })
-
-    // Add continue without login handler
-    this.element.querySelector('.continue-without-login').addEventListener('click', () => {
-      console.log('Continue without login clicked')
-      this.hide()
     })
 
     // Track initialization state
     this.initialized = false
     this.buttonRendered = false
     console.log('SignIn constructor complete')
+
+    // Listen for login success
+    document.addEventListener('loginSuccess', (event) => {
+      console.log('Login success event received:', event.detail)
+      this.showSuccessMessage()
+    })
   }
 
   async initializeGoogleSignIn() {
@@ -158,6 +161,24 @@ export class SignIn {
       visible: this.element.offsetParent !== null,
       zIndex: this.element.style.zIndex
     })
+  }
+
+  showSuccessMessage() {
+    const contentDiv = this.element.querySelector('.sign-in-content')
+    if (contentDiv) {
+      // Temporarily replace content with success message
+      const originalContent = contentDiv.innerHTML
+      contentDiv.innerHTML = '<p style="color: green; font-weight: bold;">Login Successful!</p>'
+      console.log('Showing success message')
+
+      // Hide the window after a delay
+      setTimeout(() => {
+        console.log('Hiding window after success')
+        this.hide()
+        // Restore original content for next time (optional)
+        // contentDiv.innerHTML = originalContent
+      }, 1500) // Hide after 1.5 seconds
+    }
   }
 
   hide() {

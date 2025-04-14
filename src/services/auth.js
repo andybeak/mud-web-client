@@ -96,10 +96,14 @@ export const handleSignInWithGoogle = async (response) => {
       if (error.message.includes('Provider is not enabled')) {
         console.error('Google OAuth is not enabled in your Supabase project. Please enable it in the Supabase dashboard.')
       }
+      // Dispatch failure event (optional, but could be useful)
+      document.dispatchEvent(new CustomEvent('loginFailure', { detail: error }));
       return { error }
     }
 
     console.log('Successfully signed in:', data)
+    // Dispatch success event
+    document.dispatchEvent(new CustomEvent('loginSuccess', { detail: data }));
     return { data }
   } catch (error) {
     console.error('Unexpected error during sign in:', error)
