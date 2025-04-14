@@ -286,15 +286,15 @@ export class RoomProcessor {
   }
 
   /**
-   * Generate a hash for a room based on its title
+   * Generate a hash for a room based on its title and first 5 chars of description
    * This allows identical rooms to share the same hash
    * 
-   * @param {Object} room - Room object with title
+   * @param {Object} room - Room object with title and description
    * @returns {string} - Hash value in base36
    */
   generateRoomId(room) {
-    // Only use title for the hash
-    const content = `${room.title}`;
+    const descriptionPrefix = room.description.slice(0, 5);
+    const content = `${room.title}|${descriptionPrefix}`;
     return this.hashString(content);
   }
 
