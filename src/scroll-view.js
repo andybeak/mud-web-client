@@ -13,6 +13,10 @@ import { Colorize } from './colorize.js';
 import { MacroPane } from './macro-pane.js';
 import { TriggerHappy } from './trigger-happy.js';
 import { log } from './utils.js';
+import { signOut } from './services/auth.js';
+import { SignIn } from './components/SignIn.js';
+import { SignOut } from './components/SignOut.js';
+import { getSession } from './services/auth.js';
 
 const j = jQuery;
 
@@ -91,6 +95,28 @@ export class ScrollView {
   }
 
   setupButtons() {
+    // Initialize auth components
+    const signIn = new SignIn();
+    const signOut = new SignOut();
+    
+    // Add auth button
+    this.win.addButton({
+      icon: 'fa-solid fa-lock',
+      title: 'Login',
+      click: async () => {
+        const { session } = await getSession();
+        if (session) {
+          // User is logged in, show sign out screen
+          signOut.initializeSignOut();
+          signOut.showSignOut();
+        } else {
+          // User is not logged in, show sign in screen
+          await signIn.initializeGoogleSignIn();
+          signIn.show();
+        }
+      }
+    });
+
     this.win.addButton({
       title: 'Reconnect',
       icon: 'fa-solid fa-rotate',

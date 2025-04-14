@@ -10,6 +10,8 @@ import {
   faXmark,
   faComments,
   faCaretDown,
+  faLock,
+  faRightFromBracket,
 } from '@fortawesome/free-solid-svg-icons';
 
 // Add icons to the library
@@ -23,6 +25,8 @@ library.add(
   faXmark,
   faComments,
   faCaretDown,
+  faLock,
+  faRightFromBracket,
 );
 
 // Initialize Font Awesome DOM watching

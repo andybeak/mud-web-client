@@ -73,7 +73,6 @@ export class Window {
     this.setupHandle();
     this.setTitle(o.title || '');
     this.setupTransparency();
-    this.setupButtons();
     this.setupEventHandlers();
     this.setupStyles();
     this.setupResizable();
@@ -82,6 +81,9 @@ export class Window {
     if (this.options.tabs?.length > 0) {
       this.setupTabsStructure();
     }
+
+    // Setup buttons after toolbar is initialized
+    this.setupButtons();
 
     this.bringToFront(false);
 
@@ -108,6 +110,8 @@ export class Window {
         </div>
       `);
       this.options.handle = '.handle';
+      // Get the toolbar element using querySelector
+      this.toolbar = document.querySelector(`${this.id} .toolbar`);
     } else {
       j(`${this.id} .content`).css({ top: 0 });
     }
@@ -145,29 +149,28 @@ export class Window {
     }
   }
 
-  // addButton(options) {
-  //   j(`${this.id} .toolbar`).prepend(`
-  //     <i class="icon ${options.icon} tip" title="${options.title}"></i>
-  //   `);
-  //   j(`${this.id} .${options.icon}`).click(options.click);
-  // }
-
   addButton(options) {
-    const buttonId = `btn-${Math.random().toString(36).substr(2, 9)}`;
-    j(`${this.id} .toolbar`).prepend(`
-      <a class="toolbar-button ${buttonId} tip" title="${options.title}">
-        <i class="${options.icon}"></i>
-      </a>
-    `);
+    if (!this.toolbar) {
+      console.warn('Toolbar not initialized, cannot add button');
+      return null;
+    }
 
-    // Initialize Bootstrap tooltip with custom options
-    j(`${this.id} .${buttonId}`).tooltip({
-      container: 'body',
-      placement: 'bottom',
-      trigger: 'hover',
-    });
-
-    j(`${this.id} .${buttonId}`).click(options.click);
+    const button = document.createElement('button');
+    button.className = 'toolbar-button';
+    button.title = options.title || '';
+    
+    if (options.icon) {
+      const icon = document.createElement('i');
+      icon.className = options.icon;
+      button.appendChild(icon);
+    }
+    
+    if (options.click) {
+      button.addEventListener('click', options.click);
+    }
+    
+    this.toolbar.appendChild(button);
+    return button;
   }
 
   setupEventHandlers() {

@@ -10,26 +10,41 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Store the nonce globally
+// Store the nonces globally
 let currentNonce = null
+let currentHashedNonce = null // Added to store the hashed version
 
 // Generate a nonce for Google Sign In
 export const generateNonce = async () => {
+  // Generate a raw random nonce (base64)
   const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
+  
+  // Hash the nonce for Google (SHA-256 hex)
   const encoder = new TextEncoder()
   const encodedNonce = encoder.encode(nonce)
   const hashBuffer = await crypto.subtle.digest('SHA-256', encodedNonce)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const hashedNonce = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
   
-  // Store the nonce
+  // Store both nonces globally
   currentNonce = nonce
+  currentHashedNonce = hashedNonce
+  
+  console.log('Generated Raw Nonce (for Supabase):', currentNonce)
+  console.log('Generated Hashed Nonce (for Google):', currentHashedNonce)
   
   return { nonce, hashedNonce }
 }
 
-// Get the current nonce
-export const getCurrentNonce = () => currentNonce
+// Get the current nonce (raw)
+export const getCurrentNonce = async () => {
+  if (!currentNonce) {
+    // This function might not be strictly needed anymore if handleSignInWithGoogle uses the stored value
+    console.warn('getCurrentNonce called when currentNonce is null')
+    return null
+  }
+  return currentNonce
+}
 
 // Handle Google Sign In callback
 export const handleSignInWithGoogle = async (response) => {
@@ -41,21 +56,43 @@ export const handleSignInWithGoogle = async (response) => {
   }
 
   try {
-    // Use the stored nonce
-    const nonce = getCurrentNonce()
-    if (!nonce) {
-      console.error('No nonce found. Please try signing in again.')
-      return { error: 'No nonce found. Please try signing in again.' }
+    // Decode the JWT to get the nonce
+    const [header, payload] = response.credential.split('.')
+    const decodedHeader = JSON.parse(atob(header))
+    const decodedPayload = JSON.parse(atob(payload))
+    
+    console.log('JWT Header:', decodedHeader)
+    console.log('JWT Payload:', decodedPayload)
+    console.log('Extracted nonce:', decodedPayload.nonce)
+    console.log('Current stored nonce:', currentNonce)
+    
+    // Verify the nonce matches what we stored (hashed nonce from Google vs stored hashed nonce)
+    if (decodedPayload.nonce !== currentHashedNonce) { // Compare against stored HASHED nonce
+      console.error('Nonce mismatch detected:', {
+        googleNonce: decodedPayload.nonce,
+        storedHashedNonce: currentHashedNonce,
+        storedRawNonce: currentNonce // Log raw one too for info
+      })
+      return { error: { message: 'Nonce mismatch - please try signing in again' } }
     }
     
-    const { data, error } = await supabase.auth.signInWithIdToken({
+    // If nonces match, proceed using the RAW nonce for Supabase
+    const signInParams = {
       provider: 'google',
       token: response.credential,
-      nonce: nonce
-    })
+      nonce: currentNonce // Send RAW nonce to Supabase
+    }
+    console.log('Sign in parameters:', signInParams)
+    
+    const { data, error } = await supabase.auth.signInWithIdToken(signInParams)
 
     if (error) {
       console.error('Error signing in with Google:', error)
+      console.error('Error details:', {
+        message: error.message,
+        status: error.status,
+        name: error.name
+      })
       if (error.message.includes('Provider is not enabled')) {
         console.error('Google OAuth is not enabled in your Supabase project. Please enable it in the Supabase dashboard.')
       }
@@ -66,6 +103,7 @@ export const handleSignInWithGoogle = async (response) => {
     return { data }
   } catch (error) {
     console.error('Unexpected error during sign in:', error)
+    console.error('Error stack:', error.stack)
     return { error }
   }
 }
